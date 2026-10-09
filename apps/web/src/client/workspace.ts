@@ -1,3 +1,4 @@
+import { PressNavigationController } from "./press-navigation.ts";
 import { registerLiveSurfaces } from "./live-surface.ts";
 /// <reference lib="dom" />
 
@@ -69,6 +70,7 @@ registerWorkspaceSettingsControllers();
 registerWorkspaceDevReloadController();
 registerDesignSystemControllers(application);
 registerWorkspaceControllers({
+  "press-navigation": PressNavigationController,
   "provision-terminal": createProvisionTerminalController(Controller),
 });
 

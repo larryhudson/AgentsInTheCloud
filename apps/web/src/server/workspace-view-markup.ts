@@ -22,8 +22,8 @@ export function busyAttentionIndicator(state: { busy?: boolean; requestingAttent
   return `<span class="status-indicator"${label ? ` role="img" aria-label="${label}"` : ""}>${state.busy ? '<i class="status-spinner sm" aria-hidden="true"></i>' : ""}${state.requestingAttention ? '<i class="status-dot attention" aria-hidden="true"></i>' : ""}</span>`;
 }
 
-export function fullscreenViewAttributes(key: string, title: string): string {
-  return `data-controller="agents-in-the-cloud-fullscreen" data-agents-in-the-cloud-fullscreen-mode-value="view" data-agents-in-the-cloud-fullscreen-view-key-value="${escapeHtml(key)}" data-agents-in-the-cloud-fullscreen-title-value="${escapeHtml(title)}"`;
+export function fullscreenViewAttributes(key: string, title: string, controllers = ""): string {
+  return `data-controller="agents-in-the-cloud-fullscreen${controllers ? ` ${escapeHtml(controllers)}` : ""}" data-agents-in-the-cloud-fullscreen-mode-value="view" data-agents-in-the-cloud-fullscreen-view-key-value="${escapeHtml(key)}" data-agents-in-the-cloud-fullscreen-title-value="${escapeHtml(title)}"`;
 }
 
 export function selectorCloseForm(close: ViewCloseAction): string {

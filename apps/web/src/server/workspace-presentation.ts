@@ -117,7 +117,7 @@ function renderWorkspaceRow(workspace: WorkspacePaneEntry, index: number): strin
     leadingActionsHtml: `<button type="button" class="workspace-template-icon-button" title="${escapeHtml(newFromTemplate)}" aria-label="${escapeHtml(newFromTemplate)}" data-action="workspace-pane#openPickerFor" data-workspace-pane-workspace-template-param="${escapeHtml(workspaceTemplate?.id ?? "")}">${workspaceTemplateIconHtml(workspaceTemplate)}</button>`,
     primary: {
       tag: "button",
-      attributesHtml: `${parked ? 'data-workspace-parked' : `id="${id}"`} type="${parked ? "submit" : "button"}" title="${escapeHtml(tooltip)}" aria-label="${escapeHtml(label)}"${workspace.active ? ' aria-current="page"' : ""} data-workspace-entry-id="${escapeHtml(workspace.id)}"${attentionAt}${lastActivityAt}${busyAgents}${workspaceTemplateAttribute}${parked ? "" : ' data-action="click->workspace-navigation#selectWorkspace"'}`,
+      attributesHtml: `${parked ? 'data-workspace-parked' : `id="${id}"`} type="${parked ? "submit" : "button"}" title="${escapeHtml(tooltip)}" aria-label="${escapeHtml(label)}"${workspace.active ? ' aria-current="page"' : ""} data-workspace-entry-id="${escapeHtml(workspace.id)}"${attentionAt}${lastActivityAt}${busyAgents}${workspaceTemplateAttribute}${parked ? "" : ' data-controller="press-navigation" data-action="pointerdown->press-navigation#press pointercancel->press-navigation#cancel click->press-navigation#click:capture click->workspace-navigation#selectWorkspace"'}`,
     },
   });
   return parked
@@ -198,7 +198,7 @@ export function renderWorkspacePane(presentation: WorkspacePanePresentation, sid
     href: "/settings",
     variant: "secondary",
     content: { kind: "icon-only", iconHtml: Icons.Settings, label: "Settings" },
-    attributesHtml: 'data-controller="settings-prefetch" data-action="pointerenter->settings-prefetch#prefetch focus->settings-prefetch#prefetch click->settings-prefetch#open"',
+    attributesHtml: 'data-controller="settings-prefetch press-navigation" data-action="pointerdown->press-navigation#press pointercancel->press-navigation#cancel click->press-navigation#click:capture pointerenter->settings-prefetch#prefetch focus->settings-prefetch#prefetch click->settings-prefetch#open"',
   });
   const back = buttonHtml({ type: "button", variant: "secondary", content: { kind: "icon-only", iconHtml: Icons.Back, label: "Back to workspaces" }, attributesHtml: 'data-action="workspace-pane#back"' });
   return `<div class="fixed-shell-workspace-pane" data-controller="workspace-pane"><div class="fixed-shell-workspace-main">${panelHtml({
@@ -257,7 +257,7 @@ function renderWorkViewSelector(workspaceId: string, view: WorkPaneContribution)
     iconHtml: view.iconHtml ?? Icons.Plus,
     status: { requestingAttention: view.attentionSequence !== undefined },
     containerAttributesHtml: `id="${workViewSelectorDomId(workspaceId, view.key)}" draggable="true" data-work-view-reorder-key="${escapeHtml(view.key)}" data-action="dragstart->workspace-presentation#beginWorkReorder dragover->workspace-presentation#allowWorkReorder drop->workspace-presentation#finishWorkReorder"`,
-    primary: { tag: "button", attributesHtml: `type="button" data-work-view-key="${escapeHtml(view.key)}" data-work-view-kind="${view.kind}"${view.attentionSequence === undefined ? "" : ` data-attention-sequence="${view.attentionSequence}"`} ${fullscreenViewAttributes(view.sourceKey ?? view.key, view.label)} data-action="click->workspace-presentation#selectWorkView"` },
+    primary: { tag: "button", attributesHtml: `type="button" data-work-view-key="${escapeHtml(view.key)}" data-work-view-kind="${view.kind}"${view.attentionSequence === undefined ? "" : ` data-attention-sequence="${view.attentionSequence}"`} ${fullscreenViewAttributes(view.sourceKey ?? view.key, view.label, "press-navigation")} data-action="pointerdown->press-navigation#press pointercancel->press-navigation#cancel click->press-navigation#click:capture click->workspace-presentation#selectWorkView"` },
     closeHtml: view.close ? selectorCloseForm(view.close) : "",
   });
 }
@@ -352,7 +352,7 @@ function renderMobileDestination(label: string, destination: string, iconHtml: s
   return buttonHtml({
     type: "button", variant: "secondary",
     content: { kind: "icon-only", iconHtml: `${iconHtml}${attentionHtml}`, label },
-    attributesHtml: `${workKeyAttribute} data-mobile-destination="${escapeHtml(destination)}" data-action="click->workspace-presentation#selectMobileDestination"`,
+    attributesHtml: `${workKeyAttribute} data-mobile-destination="${escapeHtml(destination)}" data-controller="press-navigation" data-action="pointerdown->press-navigation#press pointercancel->press-navigation#cancel click->press-navigation#click:capture click->workspace-presentation#selectMobileDestination"`,
   });
 }
 
@@ -375,7 +375,7 @@ function renderMobileWorkViews(views: readonly WorkPaneContribution[]) {
         label: { kind: "text", text: view.label },
         leadingHtml: view.iconHtml ?? Icons.Plus,
         trailingHtml: attention,
-        element: { tag: "button", attributesHtml: `type="button" role="menuitemradio" aria-checked="false" hidden data-more-work-key="${escapeHtml(view.key)}" data-more-work-kind="${view.kind}" data-action="click->workspace-presentation#selectMoreWorkView"` },
+        element: { tag: "button", attributesHtml: `type="button" role="menuitemradio" aria-checked="false" hidden data-more-work-key="${escapeHtml(view.key)}" data-more-work-kind="${view.kind}" data-controller="press-navigation" data-action="pointerdown->press-navigation#press pointercancel->press-navigation#cancel click->press-navigation#click:capture click->workspace-presentation#selectMoreWorkView"` },
       });
     }).join(""),
   };
@@ -408,7 +408,7 @@ function renderWorkspaceBar(presentation: WorkspacePresentation, inert = false):
   const moreMenuId = workViewDomId(presentation.workspace.id, "mobile_more_menu");
   const moreMenu = popupHtml({
     id: moreMenuId, label: "More", placement: "above",
-    trigger: { variant: "secondary", content: { kind: "icon-only", iconHtml: `${Icons.More}<span id="${workViewDomId(presentation.workspace.id, "mobile_more_attention")}">${mobileMoreAttentionHtml}</span>`, label: "More" }, attributesHtml: "data-mobile-more" },
+    trigger: { variant: "secondary", content: { kind: "icon-only", iconHtml: `${Icons.More}<span id="${workViewDomId(presentation.workspace.id, "mobile_more_attention")}">${mobileMoreAttentionHtml}</span>`, label: "More" }, attributesHtml: 'data-mobile-more data-controller="press-navigation" data-action="pointerdown->press-navigation#press pointercancel->press-navigation#cancel click->press-navigation#click:capture"' },
     menuAttributesHtml: 'data-workspace-presentation-target="moreMenu" data-action="toggle->workspace-presentation#syncMore"',
     contentHtml: `<span id="${workViewDomId(presentation.workspace.id, "mobile_overflow")}" class="contents action-list">${workViews.overflowItems}</span>
       ${launchers ? `<hr class="popup-menu__separator" data-mobile-overflow-separator hidden>${launchers}` : ""}

@@ -132,7 +132,7 @@ function renderUsageProviderLimits(overview: ProviderUsageOverview, scope: strin
 function usageButtonHtml(comparison?: { referencePercent: number; valuePercent: number }, label = "Usage", caption?: string, provider?: string): string {
   const iconHtml = caption === undefined ? Icons.Usage : `<span class="comparison-ring__caption">${escapeHtml(caption)}</span>`;
   const href = provider ? `/models?focus=${encodeURIComponent(provider)}` : "/models";
-  return actionLinkHtml({ href, variant: "secondary", content: { kind: "icon-only", iconHtml, label }, perimeterComparison: comparison, attributesHtml: 'data-turbo-stream="true"' });
+  return actionLinkHtml({ href, variant: "secondary", content: { kind: "icon-only", iconHtml, label }, perimeterComparison: comparison, attributesHtml: 'data-turbo-stream="true" data-controller="press-navigation" data-action="pointerdown->press-navigation#press pointercancel->press-navigation#cancel click->press-navigation#click:capture"' });
 }
 
 async function renderUsageButton(): Promise<string> {

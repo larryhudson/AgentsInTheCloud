@@ -69,7 +69,7 @@ function renderAgentTab(workspaceId: string, agent: AgentPaneContribution): stri
       attributesHtml: `data-agent-attention-id="${escapeHtml(agent.id)}"${agent.attentionSequence === undefined ? "" : ` data-attention-sequence="${agent.attentionSequence}"`}`,
     },
     containerAttributesHtml: `id="${agentTabDomId(workspaceId, agent.id)}"`,
-    primary: { tag: "button", attributesHtml: `type="button" data-agent-id="${escapeHtml(agent.id)}" ${fullscreenViewAttributes(agent.id, agent.title)} data-action="click->workspace-presentation#selectAgent"` },
+    primary: { tag: "button", attributesHtml: `type="button" data-agent-id="${escapeHtml(agent.id)}" ${fullscreenViewAttributes(agent.id, agent.title, "press-navigation")} data-action="pointerdown->press-navigation#press pointercancel->press-navigation#cancel click->press-navigation#click:capture click->workspace-presentation#selectAgent"` },
     closeHtml: agent.close ? selectorCloseForm(agent.close) : "",
   });
 }
@@ -92,7 +92,7 @@ export function renderAgentNavigation(presentation: WorkspacePresentation): stri
     : `<div class="fixed-shell-workspace-title"><strong>${escapeHtml(presentation.workspace.title)}</strong></div>`;
   const menu = popupHtml({
     id: domId("agent_types", presentation.workspace.id), label: "New agent",
-    trigger: { variant: "secondary", content: { kind: "icon-only", iconHtml: Icons.Plus, label: "New agent" } },
+    trigger: { variant: "secondary", content: { kind: "icon-only", iconHtml: Icons.Plus, label: "New agent" }, attributesHtml: 'data-controller="press-navigation" data-action="pointerdown->press-navigation#press pointercancel->press-navigation#cancel click->press-navigation#click:capture"' },
     width: "content",
     contentHtml: agentTypeOptions(presentation, true),
   });
