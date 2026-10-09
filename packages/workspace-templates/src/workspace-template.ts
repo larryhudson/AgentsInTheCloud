@@ -86,6 +86,7 @@ const workspaceTemplateRecordSchema = Type.Object({
   seedConfigEnabled: Type.Optional(Type.Boolean()),
   dockerfile: Type.Optional(Type.String()),
   preloadImages: Type.Optional(Type.Array(Type.String())),
+  internalHosts: Type.Optional(Type.Array(Type.String())),
 });
 
 // This discriminator and projectId are part of the existing init.json format.
@@ -221,6 +222,7 @@ function workspaceTemplateSummary(workspaceTemplate: WorkspaceTemplateRecord): W
     seedConfigEnabled: workspaceTemplate.seedConfigEnabled ?? false,
     dockerfile: workspaceTemplate.dockerfile,
     preloadImages: [...(workspaceTemplate.preloadImages ?? [])],
+    internalHosts: [...(workspaceTemplate.internalHosts ?? [])],
     configurationFingerprint: workspaceTemplateConfigurationFingerprint(workspaceTemplate),
   };
 }
@@ -359,6 +361,29 @@ export async function setWorkspaceTemplatePreloadImages(id: string, images: stri
     workspaceTemplate.preloadImages = preloadImages;
     return { workspaceTemplate: workspaceTemplateSummary(workspaceTemplate) };
   });
+}
+
+/** Exact hostnames only: a wildcard would reopen a range of private destinations. */
+export function validateWorkspaceTemplateInternalHost(host: string): void {
+  if (!/^(?=.{1,253}$)[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/.test(host)) {
+    throw new AgentsInTheCloudCoreError("invalid_arguments", `Invalid host name: ${host || "(empty)"}. Use an exact host name such as gitea.local, without wildcards, ports or URLs.`);
+  }
+}
+
+/** Host-authorized: lets workspaces from this template reach these exact hosts on private networks through the egress proxy. */
+export async function setWorkspaceTemplateInternalHosts(id: string, hosts: string[], file = workspaceTemplatesFile()): Promise<UpdateWorkspaceTemplateResult> {
+  const internalHosts = [...new Set(hosts.map((host) => host.trim().toLowerCase().replace(/\.$/, "")))];
+  internalHosts.forEach(validateWorkspaceTemplateInternalHost);
+  return await updateWorkspaceTemplateStore(file, (store) => {
+    const workspaceTemplate = findWorkspaceTemplateRecord(store, id);
+    if (internalHosts.length) workspaceTemplate.internalHosts = internalHosts;
+    else delete workspaceTemplate.internalHosts;
+    return { workspaceTemplate: workspaceTemplateSummary(workspaceTemplate) };
+  });
+}
+
+export async function getWorkspaceTemplateInternalHosts(id: string, file = workspaceTemplatesFile()): Promise<string[]> {
+  return [...(findWorkspaceTemplateRecord(await readWorkspaceTemplateStore(file), id).internalHosts ?? [])];
 }
 
 /** Host-authorized opt-in; agent-editable workspace settings cannot grant privilege. */

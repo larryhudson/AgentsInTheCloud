@@ -64,6 +64,7 @@ const workspaceTemplateDetailResponseSchema = Type.Object({
     lastUsedAt: Type.Optional(Type.Number()),
     configurationFingerprint: Type.String(),
     preloadImages: Type.Array(Type.String()),
+    internalHosts: Type.Array(Type.String()),
     privileged: Type.Boolean(),
     seedConfigEnabled: Type.Boolean(),
     environment: Type.Array(environmentVariableSchema),
@@ -231,6 +232,7 @@ describe("HTTP contracts", () => {
     const detailText = await detailResponse.text();
     const detail = Value.Parse(workspaceTemplateDetailResponseSchema, JSON.parse(detailText));
     expect(detail.workspaceTemplate.preloadImages).toEqual([]);
+    expect(detail.workspaceTemplate.internalHosts).toEqual([]);
     expect(detail.workspaceTemplate.environment).toHaveLength(1);
     expect(detail.workspaceTemplate.secrets).toHaveLength(1);
     expect(detailText).not.toContain(sensitive);

@@ -1,8 +1,8 @@
 import { clearGitHubToken as clearStoredGitHubToken, discoverGitHubToken, hasGitHubToken as hasStoredGitHubToken, setGitHubToken as setStoredGitHubToken } from "@agents-in-the-cloud/core";
-import { isGitWorkspaceTemplateInit, workspaceTemplateIdFromInit, revealWorkspaceTemplateSecrets, onWorkspaceTemplateStoreChanged, workspaceTemplateSecretPlaceholder, workspaceTemplateSecretHosts, workspaceTemplateSecretAllowsPath } from "@agents-in-the-cloud/workspace-templates";
+import { getWorkspaceTemplateInternalHosts, isGitWorkspaceTemplateInit, workspaceTemplateIdFromInit, revealWorkspaceTemplateSecrets, onWorkspaceTemplateStoreChanged, workspaceTemplateSecretPlaceholder, workspaceTemplateSecretHosts, workspaceTemplateSecretAllowsPath } from "@agents-in-the-cloud/workspace-templates";
 import { getWorkspaceInit, type WorkspaceInitInstruction } from "@agents-in-the-cloud/workspace";
-import { matchHostname } from "./patterns.ts";
-import { isWorkspaceEgressAddress } from "@agents-in-the-cloud/shared/egress-policy";
+import { matchHostname, normalizeHostnamePattern } from "./patterns.ts";
+import { isPrivateNetworkAddress, isWorkspaceEgressAddress } from "@agents-in-the-cloud/shared/egress-policy";
 import { createHttpHooks, type RequestTransformHttpHooks, type SecretRequestTransform, type SecretDefinition } from "./placeholder-hooks.ts";
 
 export const githubTokenEnvVar = "GH_TOKEN";
@@ -76,13 +76,15 @@ export async function createWorkspaceSecretContext(workspaceId: string, init?: W
   const secrets: Record<string, SecretDefinition> = token
     ? { [githubTokenEnvVar]: { value: token, hosts: githubAllowedHosts(), placeholder: workspaceTemplateSecretPlaceholder(githubTokenEnvVar) } }
     : {};
+  const internalHosts: string[] = [];
   if (isGitWorkspaceTemplateInit(init)) {
+    internalHosts.push(...await getWorkspaceTemplateInternalHosts(workspaceTemplateIdFromInit(init)));
     for (const secret of await revealWorkspaceTemplateSecrets(workspaceTemplateIdFromInit(init))) {
       secrets[secret.envName] = { value: secret.secretValue, allowInPath: workspaceTemplateSecretAllowsPath(secret), hosts: workspaceTemplateSecretHosts(secret.hostPattern), placeholder: secret.placeholder ?? workspaceTemplateSecretPlaceholder(secret.envName) };
     }
   }
   if (generation !== configurationGeneration) return createWorkspaceSecretContext(workspaceId, init);
-  const created = buildContext(workspaceId, { ...secrets, ...subscriptionSecrets });
+  const created = buildContext(workspaceId, { ...secrets, ...subscriptionSecrets }, internalHosts);
   contexts.set(workspaceId, created);
   return created;
 }
@@ -100,11 +102,14 @@ export function forgetWorkspaceSecretContext(workspaceId: string): void {
   contexts.delete(workspaceId);
 }
 
-function buildContext(workspaceId: string, secrets: Record<string, SecretDefinition>): WorkspaceSecretContext {
+function buildContext(workspaceId: string, secrets: Record<string, SecretDefinition>, internalHosts: string[]): WorkspaceSecretContext {
   const hooks = createHttpHooks({
     allowedHosts: ["*"],
     blockInternalRanges: false,
-    isIpAllowed: ({ ip }) => isWorkspaceEgressAddress(ip),
+    // Template internal hosts are exact names approved in host settings. The proxy
+    // resolves on the host and pins the checked address, so a workspace cannot
+    // steer an approved name elsewhere; loopback and link-local stay closed.
+    isIpAllowed: ({ hostname, ip }) => isWorkspaceEgressAddress(ip) || (internalHosts.includes(normalizeHostnamePattern(hostname)) && isPrivateNetworkAddress(ip)),
     replaceSecretsInQuery: false,
     secrets,
     onRequest: async (request, registerSecret) => {

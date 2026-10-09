@@ -59,6 +59,23 @@ export function isWorkspaceEgressAddress(ip: string): boolean {
   return false;
 }
 
+const privateNetworks = new BlockList();
+privateNetworks.addSubnet("10.0.0.0", 8, "ipv4"); // RFC1918
+privateNetworks.addSubnet("172.16.0.0", 12, "ipv4"); // RFC1918
+privateNetworks.addSubnet("192.168.0.0", 16, "ipv4"); // RFC1918
+privateNetworks.addSubnet("100.64.0.0", 10, "ipv4"); // CGNAT / Tailscale tailnet
+privateNetworks.addSubnet("fc00::", 7, "ipv6"); // unique local, including Tailscale
+
+/** LAN, VPN and tailnet addresses an operator may open for one exact host.
+ * Loopback, link-local (cloud metadata), multicast and reserved ranges are
+ * never reachable, even for an approved host. */
+export function isPrivateNetworkAddress(ip: string): boolean {
+  const family = isIP(ip);
+  if (family === 4) return privateNetworks.check(ip, "ipv4");
+  if (family === 6) return privateNetworks.check(ip, "ipv6");
+  return false;
+}
+
 /** nftables set elements for the System firewall, generated from the same list the proxy enforces. */
 export function workspaceEgressNftIpv4Elements(): string {
   return blockedEgressIpv4Ranges.map(([address, prefix]) => `${address}/${prefix}`).join(",\n      ");
