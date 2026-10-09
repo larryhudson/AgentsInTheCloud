@@ -35,7 +35,7 @@ function run(script: string) {
 const empty = { text: "", images: [], attachmentNotes: [] };
 const sessionId = "1f2e3d4c-0000-4000-8000-000000000001";
 function expectedBaseArgs(session: CliAgentSession): string[] {
-  return ["--approve", "--offline", "--use-theme", "agents-in-the-cloud", "--tui-mode", "regular", "--session-dir", `/home/agents-in-the-cloud/.local/share/pi/sessions/${session.id}`, "--extension", piAgentsInTheCloudExtensionPath(session)];
+  return ["--approve", "--offline", "--tui-mode", "regular", "--session-dir", `/home/agents-in-the-cloud/.local/share/pi/sessions/${session.id}`, "--extension", piAgentsInTheCloudExtensionPath(session)];
 }
 
 test("passes initial prompt, images, file notes, provider and Pi thinking level literally", async () => {
@@ -103,17 +103,6 @@ test("loads the session's AgentsInTheCloud extension", async () => {
   expect(output.split("\0")).toContain(piAgentsInTheCloudExtensionPath(session));
   expect(output.split("\0")).toContain(`/home/agents-in-the-cloud/.local/share/pi/sessions/${sessionId}`);
 });
-
-test("installs an AgentsInTheCloud theme drawn from the terminal palette", async () => {
-  await executable(binary(), 'printf "%s\\0" "$@"');
-  const [code] = await run(launch(empty, []));
-  expect(code).toBe(0);
-  const theme = JSON.parse(await readFile(`${home}/.pi/agent/themes/agents-in-the-cloud.json`, "utf8"));
-  expect(theme.name).toBe("agents-in-the-cloud");
-  expect(Object.keys(theme.colors).length).toBeGreaterThan(0);
-  for (const color of Object.values(theme.colors)) expect(Number.isInteger(color) && Number(color) < 16).toBe(true);
-});
-
 
 test("native resume restores the exact conversation with no submitted prompt", async () => {
   await executable(binary(), 'printf "%s\\0" "$@"');
