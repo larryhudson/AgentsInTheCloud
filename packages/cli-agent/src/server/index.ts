@@ -21,7 +21,10 @@ function terminalStatus(terminal: { ended: boolean; exitCode?: number }): string
 /** One adapter supplies CLI policy; this module owns the complete terminal-agent lifecycle. */
 export function createCliAgentModule(adapter: CliAgentAdapter): WorkspaceModule {
   let events: AgentsInTheCloudEventBus;
-  const agents = createCliAgents(adapter, (workspaceId, agentId, title) => events.emit("workspace_agent_title_changed", { workspaceId, agentId, title }));
+  const agents = createCliAgents(adapter, async (workspaceId, agentId, title, workspaceNamed) => {
+    await events.emit("workspace_agent_title_changed", { workspaceId, agentId, title });
+    if (workspaceNamed) await events.emit("workspace_title_changed", { workspaceId, title });
+  });
   function failureStatus(error: string) { return `Could not start ${escapeHtml(adapter.label)}: ${escapeHtml(error)}`; }
   return {
     id: `${adapter.id}-agent`,
