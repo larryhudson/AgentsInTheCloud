@@ -697,7 +697,11 @@ export function createWebApp(deps: WebAppDeps): WebApp {
         registry.startRunning(id);
         const launchPrompt = options.context?.agent?.initialPrompt?.trim();
         if (!options.title && launchPrompt && !options.context?.agent?.initialPromptMode) {
-          maybeNameWorkspaceFromPrompt(id, launchPrompt, { events: deps.events, agentModel: options.context?.agent?.model ? parseModelRef(options.context.agent.model) : undefined });
+          maybeNameWorkspaceFromPrompt(id, launchPrompt, {
+            events: deps.events,
+            agentModel: options.context?.agent?.model ? parseModelRef(options.context.agent.model) : undefined,
+            onFailure: (message) => { if (registry.get(id)) registry.setIssue(id, "naming", `Couldn't name this workspace (${message}). You can name it with /name in the AgentsInTheCloud composer.`); },
+          });
         }
         if (options.context?.agent?.initialPrompt !== undefined && !options.context.agent.initialPrompt.trim()) registry.requestAttention(id);
       } catch (error) {
