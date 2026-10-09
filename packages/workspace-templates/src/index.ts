@@ -14,6 +14,7 @@ export {
   setWorkspaceTemplatePrivileged,
   setWorkspaceTemplateSeedConfigEnabled,
   setWorkspaceTemplatePreloadImages,
+  setWorkspaceTemplatePrivateHosts,
   type GitWorkspaceTemplateInitInstruction,
   type WorkspaceTemplateConfiguration,
   type WorkspaceTemplateEnvironmentVariable,

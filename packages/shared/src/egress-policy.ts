@@ -59,6 +59,23 @@ export function isWorkspaceEgressAddress(ip: string): boolean {
   return false;
 }
 
+const privateNetworks = new BlockList();
+for (const [address, prefix] of [["10.0.0.0", 8], ["100.64.0.0", 10], ["172.16.0.0", 12], ["192.168.0.0", 16]] as const) privateNetworks.addSubnet(address, prefix, "ipv4");
+privateNetworks.addSubnet("fc00::", 7, "ipv6");
+
+/**
+ * True for LAN, VPN and tailnet addresses (RFC1918, CGNAT, IPv6 ULA). An
+ * operator-approved private host may reach these and nothing else: loopback,
+ * link-local (cloud metadata) and other special ranges stay closed even if the
+ * approved name starts resolving there.
+ */
+export function isPrivateNetworkAddress(ip: string): boolean {
+  const family = isIP(ip);
+  if (family === 4) return privateNetworks.check(ip, "ipv4");
+  if (family === 6) return privateNetworks.check(ip, "ipv6");
+  return false;
+}
+
 /** nftables set elements for the System firewall, generated from the same list the proxy enforces. */
 export function workspaceEgressNftIpv4Elements(): string {
   return blockedEgressIpv4Ranges.map(([address, prefix]) => `${address}/${prefix}`).join(",\n      ");

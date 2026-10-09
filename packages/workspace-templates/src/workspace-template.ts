@@ -86,6 +86,8 @@ const workspaceTemplateRecordSchema = Type.Object({
   seedConfigEnabled: Type.Optional(Type.Boolean()),
   dockerfile: Type.Optional(Type.String()),
   preloadImages: Type.Optional(Type.Array(Type.String())),
+  /** Exact private-network hosts the egress proxy may reach for this template's workspaces. */
+  privateHosts: Type.Optional(Type.Array(Type.String())),
 });
 
 // This discriminator and projectId are part of the existing init.json format.
@@ -221,6 +223,7 @@ function workspaceTemplateSummary(workspaceTemplate: WorkspaceTemplateRecord): W
     seedConfigEnabled: workspaceTemplate.seedConfigEnabled ?? false,
     dockerfile: workspaceTemplate.dockerfile,
     preloadImages: [...(workspaceTemplate.preloadImages ?? [])],
+    privateHosts: [...(workspaceTemplate.privateHosts ?? [])],
     configurationFingerprint: workspaceTemplateConfigurationFingerprint(workspaceTemplate),
   };
 }
@@ -357,6 +360,25 @@ export async function setWorkspaceTemplatePreloadImages(id: string, images: stri
   return await updateWorkspaceTemplateStore(file, (store) => {
     const workspaceTemplate = findWorkspaceTemplateRecord(store, id);
     workspaceTemplate.preloadImages = preloadImages;
+    return { workspaceTemplate: workspaceTemplateSummary(workspaceTemplate) };
+  });
+}
+
+/** Exact hostnames only: no wildcards, ports or schemes. A host grants private addresses, never loopback or link-local. */
+export function normalizeWorkspaceTemplatePrivateHost(host: string): string {
+  const normalized = host.trim().toLowerCase().replace(/\.$/, "");
+  if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)*$/.test(normalized)) {
+    throw new AgentsInTheCloudCoreError("invalid_arguments", `Invalid host: ${host.trim() || "(empty)"}. Use an exact host name like gitea.local.`);
+  }
+  return normalized;
+}
+
+/** Host-authorized: applies to existing workspaces on their next proxied request. */
+export async function setWorkspaceTemplatePrivateHosts(id: string, hosts: string[], file = workspaceTemplatesFile()): Promise<UpdateWorkspaceTemplateResult> {
+  const privateHosts = [...new Set(hosts.map(normalizeWorkspaceTemplatePrivateHost))];
+  return await updateWorkspaceTemplateStore(file, (store) => {
+    const workspaceTemplate = findWorkspaceTemplateRecord(store, id);
+    workspaceTemplate.privateHosts = privateHosts;
     return { workspaceTemplate: workspaceTemplateSummary(workspaceTemplate) };
   });
 }

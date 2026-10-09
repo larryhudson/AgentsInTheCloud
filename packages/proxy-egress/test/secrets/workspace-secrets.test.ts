@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { addWorkspaceTemplate, createWorkspaceTemplateSecret, updateWorkspaceTemplateSecret, deleteWorkspaceTemplateSecret, type GitWorkspaceTemplateInitInstruction } from "@agents-in-the-cloud/workspace-templates";
+import { addWorkspaceTemplate, setWorkspaceTemplatePrivateHosts, createWorkspaceTemplateSecret, updateWorkspaceTemplateSecret, deleteWorkspaceTemplateSecret, type GitWorkspaceTemplateInitInstruction } from "@agents-in-the-cloud/workspace-templates";
 import { createWorkspaceSecretContext, registerWorkspaceRequestTransform, clearGitHubToken, forgetWorkspaceSecretContext, getWorkspaceSecretContext, setGitHubToken } from "../../src/secrets/workspace-secrets.ts";
 
 function workspaceTemplateInit(workspaceTemplateId: string): GitWorkspaceTemplateInitInstruction {
@@ -151,6 +151,25 @@ describe("workspace secrets", () => {
     for (const ip of ["93.184.215.14", "8.8.8.8", "2606:4700:10::6814:179a"]) {
       expect(await context.hooks.isIpAllowed!({ hostname: "example.com", ip, family: ip.includes(":") ? 6 : 4, port: 443, protocol: "https" })).toBe(true);
     }
+  });
+
+  test("template-approved private hosts reach private addresses only, and only by exact name", async () => {
+    const workspaceTemplate = (await addWorkspaceTemplate("https://github.com/org/repo.git")).workspaceTemplate;
+    const allowed = async (hostname: string, ip: string) => (await getWorkspaceSecretContext("test-workspace", async () => workspaceTemplateInit(workspaceTemplate.id))).hooks.isIpAllowed!({ hostname, ip, family: ip.includes(":") ? 6 : 4, port: 443, protocol: "https" });
+    expect(await allowed("gitea.local", "192.168.1.121")).toBe(false);
+    await setWorkspaceTemplatePrivateHosts(workspaceTemplate.id, [" Gitea.Local. ", "executor.tail1234.ts.net"]);
+    expect(await allowed("gitea.local", "192.168.1.121")).toBe(true);
+    expect(await allowed("executor.tail1234.ts.net", "100.101.102.103")).toBe(true);
+    expect(await allowed("executor.tail1234.ts.net", "fd7a:115c:a1e0::2")).toBe(true);
+    expect(await allowed("other.local", "192.168.1.121")).toBe(false);
+    expect(await allowed("sub.gitea.local", "192.168.1.121")).toBe(false);
+    for (const ip of ["127.0.0.1", "169.254.169.254", "::1", "fe80::1", "0.0.0.0", "224.0.0.1"]) expect(await allowed("gitea.local", ip), ip).toBe(false);
+    expect(await allowed("example.com", "93.184.215.14")).toBe(true);
+    await setWorkspaceTemplatePrivateHosts(workspaceTemplate.id, []);
+    expect(await allowed("gitea.local", "192.168.1.121")).toBe(false);
+    await expect(setWorkspaceTemplatePrivateHosts(workspaceTemplate.id, ["*.local"])).rejects.toThrow();
+    await expect(setWorkspaceTemplatePrivateHosts(workspaceTemplate.id, ["https://gitea.local"])).rejects.toThrow();
+    await expect(setWorkspaceTemplatePrivateHosts(workspaceTemplate.id, ["gitea.local:443"])).rejects.toThrow();
   });
 
   test("passes an inherited placeholder onward for nested AgentsInTheCloud", async () => {

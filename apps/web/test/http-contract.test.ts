@@ -64,6 +64,7 @@ const workspaceTemplateDetailResponseSchema = Type.Object({
     lastUsedAt: Type.Optional(Type.Number()),
     configurationFingerprint: Type.String(),
     preloadImages: Type.Array(Type.String()),
+    privateHosts: Type.Array(Type.String()),
     privileged: Type.Boolean(),
     seedConfigEnabled: Type.Boolean(),
     environment: Type.Array(environmentVariableSchema),

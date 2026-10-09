@@ -11,7 +11,7 @@ import {
   getWorkspaceTemplateConfiguration, getWorkspaceTemplateSshKnownHosts,
   listWorkspaceTemplates, parseWorkspaceTemplateSpec, renameWorkspaceTemplateSshKey,
   workspaceTemplateSecretPathPermissionSchema,
-  setWorkspaceTemplateDockerfile, setWorkspaceTemplatePreloadImages, setWorkspaceTemplatePrivileged, setWorkspaceTemplateSeedConfigEnabled,
+  setWorkspaceTemplateDockerfile, setWorkspaceTemplatePreloadImages, setWorkspaceTemplatePrivateHosts, setWorkspaceTemplatePrivileged, setWorkspaceTemplateSeedConfigEnabled,
   setWorkspaceTemplateSshKnownHosts,
   updateWorkspaceTemplate,
   updateWorkspaceTemplateEnvironmentVariable, updateWorkspaceTemplateSecret,
@@ -141,7 +141,7 @@ export function createWorkspaceTemplateRoutes(deps: {
     if (concern !== "preload-images") deps.invalidatePresentation();
     if (requestAcceptsJson(request)) return jsonResponse(result);
     const workspaceTemplateId = decodeURIComponent(url.pathname.split("/")[2]!);
-    const section: TemplateSettingsSection = concern === "seed-config" ? "developer" : concern === "secrets" ? "secrets" : concern === "environment" ? "environment" : concern === "ssh-keys" || concern === "ssh-known-hosts" ? "ssh" : concern === "privileged" || concern === "dockerfile" || concern === "preload-images" ? "container" : "general";
+    const section: TemplateSettingsSection = concern === "seed-config" ? "developer" : concern === "secrets" ? "secrets" : concern === "environment" ? "environment" : concern === "private-hosts" ? "network" : concern === "ssh-keys" || concern === "ssh-known-hosts" ? "ssh" : concern === "privileged" || concern === "dockerfile" || concern === "preload-images" ? "container" : "general";
     const deleted = url.pathname.endsWith("/delete");
     const record = concern === "privileged" ? "docker" : concern === "preload-images" ? "images" : concern === "dockerfile" ? "dockerfile" : concern === "ssh-known-hosts" ? "known-hosts" : "secret" in result ? result.secret.id : "environmentVariable" in result ? result.environmentVariable.id : "key" in result ? result.key.id : undefined;
     // Save/create remains in the editor, using the persisted record ID and fresh credential fields.
@@ -190,6 +190,19 @@ export function createWorkspaceTemplateRoutes(deps: {
     }
     const result = await setWorkspaceTemplatePreloadImages(workspaceTemplateId, images);
     return workspaceTemplateSettingsResponse(request, result);
+  }
+
+  async function updateWorkspaceTemplatePrivateHostsEndpoint(workspaceTemplateId: string, request: Request): Promise<Response> {
+    let hosts: string[];
+    if (requestAcceptsJson(request)) {
+      const body = await readJsonObject(request);
+      if (!Value.Check(Type.Array(Type.String()), body.privateHosts)) throw invalidArguments("privateHosts must be an array of host names");
+      hosts = body.privateHosts;
+    } else {
+      const form = await request.formData();
+      hosts = String(form.get("privateHosts") ?? "").split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    }
+    return workspaceTemplateSettingsResponse(request, await setWorkspaceTemplatePrivateHosts(workspaceTemplateId, hosts));
   }
 
   async function workspaceTemplateEnvironmentVariableValues(request: Request): Promise<{ name: string; value: string }> {
@@ -334,6 +347,7 @@ export function createWorkspaceTemplateRoutes(deps: {
     if ((params = matchRoute(url, /^\/workspace-templates\/([^/]+)\/dockerfile$/)) && request.method === "POST") return await updateWorkspaceTemplateDockerfileEndpoint(params[0]!, request);
     if ((params = matchRoute(url, /^\/workspace-templates\/([^/]+)\/seed-config$/)) && request.method === "POST") return await updateWorkspaceTemplateSeedConfigEndpoint(params[0]!, request);
     if ((params = matchRoute(url, /^\/workspace-templates\/([^/]+)\/preload-images$/)) && request.method === "POST") return await updateWorkspaceTemplatePreloadImagesEndpoint(params[0]!, request);
+    if ((params = matchRoute(url, /^\/workspace-templates\/([^/]+)\/private-hosts$/)) && request.method === "POST") return await updateWorkspaceTemplatePrivateHostsEndpoint(params[0]!, request);
     if ((params = matchRoute(url, /^\/workspace-templates\/([^/]+)$/)) && request.method === "GET" && requestAcceptsJson(request)) return await workspaceTemplateDetailEndpoint(params[0]!);
     if ((params = matchRoute(url, /^\/workspace-templates\/([^/]+)$/)) && request.method === "POST") return await updateWorkspaceTemplateEndpoint(params[0]!, request);
     if ((params = matchRoute(url, /^\/workspace-templates\/([^/]+)\/environment$/)) && request.method === "POST") return await createWorkspaceTemplateEnvironmentVariableEndpoint(params[0]!, request);
