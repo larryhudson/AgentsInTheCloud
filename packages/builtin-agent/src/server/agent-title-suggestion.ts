@@ -4,11 +4,6 @@ import { getWorkspaceTitle, listWorkspaces, setWorkspaceTitle } from "@agents-in
 import { resolveNewWorkspaceAgentModel } from "@agents-in-the-cloud/agent/server/model-state";
 import { cheapestAvailableProviderModel, claudeCodeHeaders, createPiModelRuntime, type ModelRef } from "@agents-in-the-cloud/llm/server";
 import { listWorkspaceAgents, setWorkspaceAgentTitle, untitledAgentTitle, type WorkspaceAgentInfo } from "./agent-store.ts";
-
-/**
- * A slug needs no reasoning, and asking for one shrinks the answer room a thinking
- * budget would need: Anthropic rejects the resulting sub-1024 token budget outright.
- */
 import { agentTitleRequestOptions, normalizeSlug, promptFor, textFromResponse } from "@agents-in-the-cloud/agent/server/slug-suggestion";
 
 export function createAutomaticWorkspaceNamingGate() {
@@ -111,7 +106,7 @@ function suggestAgentTitle(agent: { workspaceId: string; agentId?: string }, use
       if (!(await runtime.checkAuth(model.provider))) return fail(titleModelRef, "model authentication is not configured");
       const response = await runtime.completeSimple(model, {
         messages: [{ role: "user", content: promptFor(promptText), timestamp: Date.now() }],
-      }, { ...agentTitleRequestOptions, headers: claudeCodeHeaders(model), sessionId: crypto.randomUUID() });
+      }, { ...agentTitleRequestOptions(model), headers: claudeCodeHeaders(model), sessionId: crypto.randomUUID() });
       if (response.stopReason === "error") {
         return fail(titleModelRef, response.errorMessage ?? "model returned an error", {
           stopReason: response.stopReason,
