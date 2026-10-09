@@ -111,7 +111,7 @@ export function createCliAgentModule(adapter: CliAgentAdapter): WorkspaceModule 
 
 export { createCliModelSettings, type CliModelSettings } from "./model-settings.ts";
 export { checkedWorkspaceShell, writeCliSessionFiles } from "./agents.ts";
-export { cliLaunchScript, cliPromptText, emptyAgentInput, writeFileScript } from "./launch-script.ts";
+export { managedCliLaunchScript, cliLaunchScript, cliPromptText, emptyAgentInput, writeFileScript } from "./launch-script.ts";
 export { turnSignalArgv, turnSignalShell, type TurnBoundary } from "./turn-signal.ts";
 export { syntaxSlot, transcriptSlot } from "./transcript-palette.ts";
 export { latestNativeSessionFile, loadNativeTranscriptFiles, loadNativeTranscriptImage, nativeImageResponse, nativeImageTypes, nativeJsonlRows, nativeSessionFiles, nativeTimestamp } from "./native-transcript.ts";
