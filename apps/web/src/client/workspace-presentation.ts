@@ -332,7 +332,7 @@ export function createWorkspacePresentationController(
       return {
         activeAgentId: stored?.activeAgentId,
         activeWorkViewKey: stored?.activeWorkViewKey,
-        workPaneVisible: stored?.workPaneVisible ?? !this.isPhone,
+        workPaneVisible: stored?.workPaneVisible ?? false,
         phoneDestination: stored?.phoneDestination ?? "agents",
         drawers: stored?.drawers ?? [],
       };
