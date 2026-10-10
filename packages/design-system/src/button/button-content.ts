@@ -1,7 +1,7 @@
 import { escapeHtml } from "@agents-in-the-cloud/shared";
 import { classNames } from "../html.ts";
 
-export type ButtonVariant = "primary" | "secondary" | "danger";
+export type ButtonVariant = "primary" | "secondary" | "toolbar" | "danger";
 
 export type ButtonContent =
   | { kind: "caption"; caption: string; iconHtml?: string }

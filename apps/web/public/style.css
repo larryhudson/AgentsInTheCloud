@@ -611,3 +611,40 @@ html.software-keyboard-visible .composer.launch-composer :is(.agent-attach-row, 
   .agent-empty-choices .agent-type-what { grid-column:1 / -1; overflow-wrap:normal; }
   .agent-empty-choices .agent-type-subscriptions { display:flex; }
 }
+
+/* Apple Light is one window: muted navigation, quiet chrome, divided canvases. */
+[data-theme="apple-light"] .fixed-shell-app { --fixed-shell-gap: 0px; }
+[data-theme="apple-light"] :is(.fixed-shell-workspace-main, .fixed-shell-agent-pane, .fixed-shell-work-pane) > .panel {
+  border-radius: 0; border: 0; background: var(--panel);
+}
+[data-theme="apple-light"] .fixed-shell-workspace-main > .panel {
+  background: var(--bg); border-inline-end: 1px solid var(--line);
+}
+[data-theme="apple-light"] .fixed-shell-work-pane > .panel { border-inline-start: 1px solid var(--line); }
+[data-theme="apple-light"] :is(.fixed-shell-agent-pane, .fixed-shell-work-pane) > .panel > .panel__header {
+  background: var(--bg);
+}
+
+@media (max-width: 700px), (hover: none) and (pointer: coarse) {
+  /* iOS-style toolbar: generous hit areas without outlined button tiles. */
+  [data-theme="apple-light"] .fixed-shell-mobile-nav {
+    margin-top: 0;
+    padding: 3px 12px calc(3px + env(safe-area-inset-bottom, 0px));
+    background: var(--bg);
+  }
+  [data-theme="apple-light"] .fixed-shell-mobile-nav .button.icon-only {
+    --button-icon-size: 23px;
+    --button-background: transparent;
+    --button-border: transparent;
+    --button-hover-border: transparent;
+    --button-hover-background: var(--row-hover);
+    width: 48px; height: 48px; min-height: 44px;
+    border-color: transparent;
+    background: transparent;
+    color: var(--text-muted);
+  }
+  [data-theme="apple-light"] .fixed-shell-mobile-nav .button[aria-pressed="true"],
+  [data-theme="apple-light"] .fixed-shell-mobile-nav .button[aria-current]:not([aria-current="false"]) {
+    border-color: transparent; background: transparent; color: var(--accent);
+  }
+}

@@ -101,3 +101,18 @@
 .content-row--multiline:not(:has(.content-row__description)) > .content-row__primary { align-items: center; }
 .content-row--multiline:not(:has(.content-row__description)) .content-row__icon,
 .content-row--multiline:not(:has(.content-row__description)) .content-row__metadata { padding-top: 0; }
+
+/* Focus is a ring, hover is quiet, and selection survives either interaction. */
+[data-theme="apple-light"] .content-row { border-radius: var(--radius-control); }
+[data-theme="apple-light"] .content-row:not(:disabled):not([aria-disabled="true"]):is(:hover, :focus-visible, :has(:focus-visible)) {
+  background: var(--row-hover);
+}
+[data-theme="apple-light"] .content-row:has(> .content-row__primary:is([aria-current]:not([aria-current="false"]), [aria-selected="true"], [aria-checked="true"])),
+[data-theme="apple-light"] .content-row.content-row__primary:is([aria-current]:not([aria-current="false"]), [aria-selected="true"], [aria-checked="true"]) {
+  background: var(--row-selected);
+  color: var(--row-selected-text);
+}
+[data-theme="apple-light"] .content-row:not(:disabled):not([aria-disabled="true"]):is(:focus-visible, :has(> .content-row__primary:focus-visible)) {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}

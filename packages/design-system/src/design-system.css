@@ -140,7 +140,11 @@
   --radius-control: 8px;
   --radius-surface: 12px;
   --radius-overlay: 16px;
-  --radius-round: 8px;
+  --radius-round: 999px;
+  --font-mono: "SF Mono", ui-monospace, Menlo, monospace;
+  --row-hover: rgb(0 0 0 / 4%);
+  --row-selected: #dce9f8;
+  --row-selected-text: #004b99;
   --bg: #f5f5f7;
   --panel: #ffffff;
   --elev: #f5f5f7;

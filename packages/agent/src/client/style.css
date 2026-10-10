@@ -72,7 +72,7 @@
 }
 [data-theme="apple-light"] .agent-message:not(:empty) {
   --markdown-block-spacing: 6px;
-  margin-block: 6px;
+  margin-block: 4px;
   box-sizing: border-box;
   width: fit-content;
   max-width: 100%;
@@ -314,3 +314,8 @@
 .agent-body-controls { position: absolute; z-index: 3; top: 4px; right: 12px; }
 
 .agent-tool-abort-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
+
+[data-theme="apple-light"] :is(.agent-message, .agent-user-bubble) {
+  font-size: 15px;
+}
+[data-theme="apple-light"] .agent-message:not(.agent-final) { border-radius: 18px; }

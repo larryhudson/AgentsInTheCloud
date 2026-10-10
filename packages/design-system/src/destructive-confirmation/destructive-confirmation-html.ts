@@ -26,7 +26,7 @@ export function destructiveConfirmationHtml(options: DestructiveConfirmationOpti
   const triggerButton = `<button class="${presentation.className} destructive-confirmation__trigger" type="button" popovertarget="${popoverId}" aria-controls="${popoverId}" aria-expanded="false"${presentation.accessibilityHtml}${trigger.disabled ? " disabled" : ""}${attributesHtml(trigger.attributesHtml)}>${presentation.contentHtml}<span class="destructive-confirmation__cancel" aria-hidden="true">${cancelContent}</span></button>`;
   const confirmButton = buttonHtml({
     type: "submit",
-    variant: trigger.variant,
+    variant: "danger",
     content: { kind: "caption", caption: options.confirmCaption },
     attributesHtml: options.confirmFormAction === undefined ? undefined : `formaction="${escapeHtml(options.confirmFormAction)}"`,
   });

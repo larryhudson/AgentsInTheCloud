@@ -92,7 +92,7 @@ export function renderAgentNavigation(presentation: WorkspacePresentation): stri
     : `<div class="fixed-shell-workspace-title"><strong>${escapeHtml(presentation.workspace.title)}</strong></div>`;
   const menu = popupHtml({
     id: domId("agent_types", presentation.workspace.id), label: "New agent",
-    trigger: { variant: "secondary", content: { kind: "icon-only", iconHtml: Icons.Plus, label: "New agent" }, attributesHtml: 'data-controller="press-navigation" data-action="pointerdown->press-navigation#press pointercancel->press-navigation#cancel click->press-navigation#click:capture"' },
+    trigger: { variant: "toolbar", content: { kind: "icon-only", iconHtml: Icons.Plus, label: "New agent" }, attributesHtml: 'data-controller="press-navigation" data-action="pointerdown->press-navigation#press pointercancel->press-navigation#cancel click->press-navigation#click:capture"' },
     width: "content",
     contentHtml: agentTypeOptions(presentation, true),
   });
@@ -110,11 +110,11 @@ function renderAgentPaneSlot(workspaceId: string, agent: AgentPaneContribution, 
 }
 
 function renderAgentActions(presentation: WorkspacePresentation): string {
-  const parkButton = buttonHtml({ type: "submit", variant: "secondary", content: { kind: "icon-only", iconHtml: Icons.Park, label: "Park workspace" } });
+  const parkButton = buttonHtml({ type: "submit", variant: "toolbar", content: { kind: "icon-only", iconHtml: Icons.Park, label: "Park workspace" } });
   const parkWorkspace = `<form class="fixed-shell-park-workspace" method="post" action="/workspaces/${encodeURIComponent(presentation.workspace.id)}/park" data-action="submit->workspace-navigation#parkWorkspace">${parkButton}</form>`;
   const deleteConfirmation = destructiveConfirmationHtml({
     id: domId("delete_workspace", presentation.workspace.id),
-    trigger: { type: "button", variant: "danger", content: { kind: "icon-only", iconHtml: Icons.Trash, label: "Delete workspace" } },
+    trigger: { type: "button", variant: "toolbar", content: { kind: "icon-only", iconHtml: Icons.Trash, label: "Delete workspace" } },
     confirmCaption: "Yes, delete",
     cancelCaption: "Oops",
   });

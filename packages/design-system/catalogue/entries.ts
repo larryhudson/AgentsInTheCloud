@@ -368,15 +368,16 @@ export const entries: CatalogueEntry[] = [
     id: "button",
     compareButtonSizes: true,
     title: "Button",
-    when: "An action with a quiet directional rim and background light, not navigation. Primary for the main action, secondary for supporting actions, danger for destructive actions. Progress and usage rings retain their own perimeter treatment.",
+    when: "An action with a quiet directional rim and background light, not navigation. Primary for the main action, secondary for supporting actions, toolbar for quiet chrome, danger for destructive actions. Progress and usage rings retain their own perimeter treatment.",
     contract:
       "Choose caption OR icon-only with a mandatory accessible label. On narrow screens (≤700px) or coarse pointers, regular icon-only controls are 42.5px with 17.85px icons. Add data-popular-button to a button (via attributesHtml) or containing group for 62.5px controls and 26.25px icons. Popular caption buttons also have a 62.5px minimum height; ordinary caption buttons are unchanged. Desktop popular sizes are fixed: 38.24px icon controls with 20.59px icons, and 36.93px minimum-height caption controls with 18.38px icons. Native type and disabled are explicit. Do not add classes or override component anatomy via attributesHtml.",
     imports: { button: "buttonHtml", icons: "Icons" },
     sources: ["button/button-content.ts"],
     examples: [
       {
-        title: "Icon-only · grouped icon and caption",
+        title: "Toolbar · icon-only · grouped icon and caption",
         render: () =>
+          buttonHtml({ type: "button", variant: "toolbar", content: { kind: "icon-only", iconHtml: Icons.Settings, label: "Settings" } }) +
           buttonHtml({ type: "button", variant: "secondary", content: { kind: "icon-only", iconHtml: Icons.Plus, label: "Add item" } }) +
           buttonGroupHtml({
             semantics: "group", label: "Quick actions", orientation: "horizontal",
@@ -845,7 +846,7 @@ export const entries: CatalogueEntry[] = [
     title: "Destructive confirmation",
     when: "A two-step destructive form action with an in-place opt-out and an adjacent confirmation button. Use Dialog for explanations or additional input.",
     contract:
-      "Place inside a form. The trigger becomes Cancel, keeping its original size as a minimum and growing for a longer caption. This growth may nudge neighbors; use short cancel captions. Only the confirm button stays out of layout. The bare confirm button prefers the nearest container that fits both controls, then the viewport. It follows scrolling/resizing and dismisses when the trigger leaves view. Its anchor-aware scale/fade entrance takes 250ms and stays inert; dismissal fades out in 150ms. Cancel reveals in place. All motion respects reduced motion. Focus stays on Cancel. Escape, outside click, or Cancel dismisses; confirm submits natively, with an optional action override. Demos intercept submission.",
+      "Place inside a form. Confirmation uses the danger variant even when its trigger is a quiet toolbar control. The trigger becomes Cancel, keeping its original size as a minimum and growing for a longer caption. This growth may nudge neighbors; use short cancel captions. Only the confirm button stays out of layout. The bare confirm button prefers the nearest container that fits both controls, then the viewport. It follows scrolling/resizing and dismisses when the trigger leaves view. Its anchor-aware scale/fade entrance takes 250ms and stays inert; dismissal fades out in 150ms. Cancel reveals in place. All motion respects reduced motion. Focus stays on Cancel. Escape, outside click, or Cancel dismisses; confirm submits natively, with an optional action override. Demos intercept submission.",
     imports: { "destructive-confirmation": "destructiveConfirmationHtml" },
     sources: ["destructive-confirmation/destructive-confirmation-controller.ts", "destructive-confirmation/destructive-confirmation.css", "popup/popup-position.ts"],
     examples: [

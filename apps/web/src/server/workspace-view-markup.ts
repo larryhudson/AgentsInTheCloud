@@ -10,7 +10,7 @@ export interface ViewCloseAction {
 export function barButton(label: string, action: string, iconHtml: string, attributes = ""): string {
   return buttonHtml({
     type: "button",
-    variant: "secondary",
+    variant: "toolbar",
     content: { kind: "icon-only", iconHtml, label },
     attributesHtml: `data-action="${action}" ${attributes}`,
   });
@@ -30,7 +30,7 @@ export function selectorCloseForm(close: ViewCloseAction): string {
   const label = `Close ${close.label}`;
   const confirmation = destructiveConfirmationHtml({
     id: `close_${close.action}`,
-    trigger: { type: "button", variant: "danger", content: { kind: "icon-only", iconHtml: Icons.Close, label } },
+    trigger: { type: "button", variant: "toolbar", content: { kind: "icon-only", iconHtml: Icons.Close, label } },
     confirmCaption: "Yes, close",
     cancelCaption: "Oops",
   });

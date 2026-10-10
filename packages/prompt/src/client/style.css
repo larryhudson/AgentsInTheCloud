@@ -120,3 +120,44 @@ html.software-keyboard-visible .composer .composer-surface > form > [role="statu
   background: rgba(37, 99, 235, .08); color: var(--accent); font-weight: var(--weight-semibold);
   display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 10;
 }
+
+/* A compact inset editor in Apple Light; typing mode keeps its existing layout. */
+[data-theme="apple-light"] .agent-composer-pane > .composer > .composer-surface {
+  margin: 8px 12px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 20px;
+  background: var(--panel);
+}
+[data-theme="apple-light"] .agent-composer-pane > .composer > .composer-surface:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+html:not(.software-keyboard-visible)[data-theme="apple-light"] .composer-input { grid-column: 1 / -1; }
+html:not(.software-keyboard-visible)[data-theme="apple-light"] .composer-buttons {
+  grid-area: 2 / 2;
+  flex-direction: row;
+  align-items: center;
+  padding-top: 0;
+}
+[data-theme="apple-light"] .composer-footer {
+  border-top: 0; background: transparent; color: var(--text-muted);
+}
+[data-theme="apple-light"] .composer-buttons .button.secondary {
+  --button-border: transparent; --button-background: transparent;
+  --button-hover-border: transparent; --button-hover-background: var(--row-hover);
+}
+[data-theme="apple-light"] .composer-send .button.primary.icon-only { border-radius: var(--radius-round); }
+@media (max-width: 700px), (pointer: coarse) {
+  [data-theme="apple-light"] .composer { --composer-control-size: 44px; }
+  [data-theme="apple-light"] .composer-buttons .button.icon-only {
+    width: 44px; height: 44px; min-height: 44px; --button-icon-size: 20px;
+  }
+  [data-theme="apple-light"] .agent-composer-pane > .composer > .composer-surface { margin-inline: 8px; }
+  [data-theme="apple-light"] .agent-composer-pane > .composer > .composer-surface:focus-within {
+    border-color: var(--line-strong); box-shadow: none;
+  }
+}
+[data-theme="apple-light"] .composer-footer .button.secondary {
+  --button-border: transparent; --button-background: transparent;
+  --button-hover-border: transparent; --button-hover-background: var(--row-hover);
+}

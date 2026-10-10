@@ -36,3 +36,8 @@
 
 
 .text-field[aria-invalid="true"], .textarea[aria-invalid="true"] { border-color: var(--danger); }
+
+[data-theme="apple-light"] :is(.text-field, .textarea):not(:disabled):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  outline-offset: 2px;
+}
