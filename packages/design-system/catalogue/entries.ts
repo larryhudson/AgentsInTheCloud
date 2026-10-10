@@ -18,7 +18,7 @@ import { qrCodeButtonHtml, qrCodeDialogHtml } from "../src/qr-code/qr-code-html.
 import { destructiveConfirmationHtml } from "../src/destructive-confirmation/destructive-confirmation-html.ts";
 import { dialogHtml } from "../src/dialog/dialog-html.ts";
 import { panelHtml } from "../src/panel/panel-html.ts";
-import { popupHtml } from "../src/popup/popup-html.ts";
+import { contextMenuHtml, popupHtml } from "../src/popup/popup-html.ts";
 import { toggleHtml } from "../src/toggle/toggle-html.ts";
 import { autocompleteHtml } from "../src/autocomplete/autocomplete-html.ts";
 import { transientFeedbackHtml } from "../src/transient-feedback/transient-feedback-html.ts";
@@ -948,8 +948,16 @@ export const entries: CatalogueEntry[] = [
     when: "Compact choices anchored to a disclosure. Prefer popupHtml: one call owns trigger, anchor, ARIA and native popover behavior.",
     contract:
       "Unique id per instance. Items need menuitem or menuitemradio roles and native actions. Escape closes; arrows move through enabled items. Placement flips at viewport edges. Use width: \"content\" for wider comparisons; content remains bounded by the viewport. Trigger captions stay on one line and truncate in constrained containers; menus expose the full choices. The package owns trigger linkage and positioning; trigger.attributesHtml and menuAttributesHtml connect application behavior without supplying class or style. Try the REAL viewport corners in the edge laboratory.",
-    imports: { popup: "popupHtml", "content-row": "contentRowHtml" },
+    imports: { popup: "popupHtml, contextMenuHtml", "content-row": "contentRowHtml" },
     examples: [
+      {
+        title: "Right-click context menu · Shift+F10",
+        render: (idSuffix = "") => contextMenuHtml({
+          id: `catalogue-context${idSuffix}`, label: "Workspace actions",
+          targetHtml: contentRowHtml({ kind: "compact", width: "fill", label: { kind: "text", text: "Right-click this workspace" }, element: { tag: "button", attributesHtml: 'type="button"' } }),
+          contentHtml: ["Park", "Delete"].map(text => contentRowHtml({ kind: "compact", width: "fill", label: { kind: "text", text }, element: { tag: "button", attributesHtml: 'type="button" role="menuitem"' } })).join(""),
+        }),
+      },
       {
         title: "Content-width comparison · viewport bounded",
         render: (idSuffix = "") => popupHtml({

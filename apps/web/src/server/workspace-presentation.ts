@@ -8,7 +8,7 @@ import { buttonGroupHtml } from "@agents-in-the-cloud/design-system/button-group
 import { dialogHtml } from "@agents-in-the-cloud/design-system/dialog";
 import { Icons } from "@agents-in-the-cloud/design-system/icons";
 import { panelHtml } from "@agents-in-the-cloud/design-system/panel";
-import { popupHtml } from "@agents-in-the-cloud/design-system/popup";
+import { contextMenuHtml, popupHtml } from "@agents-in-the-cloud/design-system/popup";
 import { tabHtml, tabStripHtml } from "@agents-in-the-cloud/design-system/tab-strip";
 import { domId, escapeHtml, turboStream, workspaceWorkViewLabelDomId } from "@agents-in-the-cloud/shared";
 import { formatShortcutBinding } from "../shortcut-binding.ts";
@@ -111,7 +111,6 @@ function renderWorkspaceRow(workspace: WorkspacePaneEntry, index: number): strin
   const row = contentRowHtml({
     width: "fill",
     kind: "compact",
-    container: parked ? undefined : { attributesHtml: `data-workspace-order="${index}"` },
     label: { kind: "text", text: workspace.title },
     trailingHtml: renderWorkspaceRowStatus(workspace),
     leadingActionsHtml: `<button type="button" class="workspace-template-icon-button" title="${escapeHtml(newFromTemplate)}" aria-label="${escapeHtml(newFromTemplate)}" data-action="workspace-pane#openPickerFor" data-workspace-pane-workspace-template-param="${escapeHtml(workspaceTemplate?.id ?? "")}">${workspaceTemplateIconHtml(workspaceTemplate)}</button>`,
@@ -120,9 +119,20 @@ function renderWorkspaceRow(workspace: WorkspacePaneEntry, index: number): strin
       attributesHtml: `${parked ? 'data-workspace-parked' : `id="${id}"`} type="${parked ? "submit" : "button"}" title="${escapeHtml(tooltip)}" aria-label="${escapeHtml(label)}"${workspace.active ? ' aria-current="page"' : ""} data-workspace-entry-id="${escapeHtml(workspace.id)}"${attentionAt}${lastActivityAt}${busyAgents}${workspaceTemplateAttribute}${parked ? "" : ' data-controller="press-navigation" data-action="pointerdown->press-navigation#press pointercancel->press-navigation#cancel click->press-navigation#click:capture click->workspace-navigation#selectWorkspace"'}`,
     },
   });
-  return parked
+  const targetHtml = parked
     ? `<form id="${id}" method="post" action="/workspaces/${encodeURIComponent(workspace.id)}/unpark" data-action="submit->workspace-navigation#unparkWorkspace">${row}</form>`
     : row;
+  const base = `/workspaces/${encodeURIComponent(workspace.id)}`;
+  const item = (action: "park" | "delete") => contentRowHtml({
+    kind: "compact", width: "fill", label: { kind: "text", text: action === "park" ? "Park" : "Delete" },
+    leadingHtml: action === "park" ? Icons.Park : Icons.Trash,
+    element: { tag: "a", attributesHtml: `href="${base}/${action}/confirm" role="menuitem" data-turbo-stream="true"` },
+  });
+  return contextMenuHtml({
+    id: domId("workspace_context_menu", workspace.id), label: `Actions for ${workspace.title}`,
+    targetHtml, contentHtml: `${parked ? "" : item("park")}${item("delete")}`,
+    attributesHtml: parked ? undefined : `data-workspace-order="${index}"`,
+  });
 }
 
 const workspaceTemplateDialogTarget = 'data-turbo-frame="_top" data-turbo-stream="true"';
@@ -475,11 +485,20 @@ export function renderWorkspaceParkConfirmation(id: string, title: string, workV
     element: { id: domId("workspace_park_confirmation", id), attributesHtml: "data-dialog-auto-show" },
     iconHtml: Icons.Park,
     titleCaption: `Park “${title}”?`,
-    bodyHtml: `<p>You have ${openViews} open in this workspace.</p><p>Parking will close ${singular ? "it" : "them"}. ${singular ? "It" : "They"} won’t reopen when you unpark.</p>`,
-    footerHtml: `<form method="dialog">${buttonHtml({ type: "submit", variant: "primary", content: { kind: "caption", caption: "Cancel" } })}</form><form method="post" action="/workspaces/${encodeURIComponent(id)}/park?force=1" data-action="submit->workspace-navigation#parkWorkspace">${buttonHtml({ type: "submit", variant: "secondary", content: { kind: "caption", caption: "Force park" } })}</form>`,
+    bodyHtml: openViews ? `<p>You have ${openViews} open in this workspace.</p><p>Parking will close ${singular ? "it" : "them"}. ${singular ? "It" : "They"} won’t reopen when you unpark.</p>` : `<p>This workspace will move to Parked. You can unpark it later.</p>`,
+    footerHtml: `<form method="dialog">${buttonHtml({ type: "submit", variant: "primary", content: { kind: "caption", caption: "Cancel" } })}</form><form method="post" action="/workspaces/${encodeURIComponent(id)}/park?force=1" data-action="submit->workspace-navigation#parkWorkspace">${buttonHtml({ type: "submit", variant: "secondary", content: { kind: "caption", caption: openViews ? "Force park" : "Park" } })}</form>`,
   });
 }
 
 export function dismissWorkspaceParkConfirmationTurboStream(id: string): string {
   return turboStream("remove", domId("workspace_park_confirmation", id));
+}
+
+export function renderWorkspaceDeleteConfirmation(id: string, title: string): string {
+  return dialogHtml({
+    element: { id: domId("workspace_delete_confirmation", id), attributesHtml: "data-dialog-auto-show", actions: "turbo:submit-end->dialog#submitted" },
+    iconHtml: Icons.Trash, titleCaption: `Delete “${title}”?`,
+    bodyHtml: "<p>This will permanently delete the workspace and its local files. This can’t be undone.</p>",
+    footerHtml: `<form method="dialog">${buttonHtml({ type: "submit", variant: "secondary", content: { kind: "caption", caption: "Cancel" } })}</form><form method="post" action="/workspaces/${encodeURIComponent(id)}/delete" data-turbo="true">${buttonHtml({ type: "submit", variant: "danger", content: { kind: "caption", caption: "Delete" } })}</form>`,
+  });
 }

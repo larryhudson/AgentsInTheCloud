@@ -66,7 +66,7 @@ import { themeRegionHtml, themeRegionId } from "./settings/theme.ts";
 import { parseCloseWorkViewRequest, parseReorderWorkViewRequest } from "./work-view-api.ts";
 import { createWorkspaceDeletion } from "./workspace-deletion.ts";
 import { workspaceModules as defaultWorkspaceModules } from "./workspace-modules.generated.ts";
-import { dismissWorkspaceParkConfirmationTurboStream, presentWorkViewTurboStream, renderAgentsInTheCloudBar, renderMobileWorkspaceBar, renderWorkspaceDeletionPresentation, renderWorkspacePane, renderWorkspaceParkConfirmation, renderWorkspacePresentation, workspacePaneCollectionsRegions, workContentId, type WorkspacePresentation as FixedWorkspacePresentation, type WorkPaneContribution, type WorkspacePanePresentation, type WorkspacePaneWorkspaceTemplate } from "./workspace-presentation.ts";
+import { dismissWorkspaceParkConfirmationTurboStream, presentWorkViewTurboStream, renderAgentsInTheCloudBar, renderMobileWorkspaceBar, renderWorkspaceDeletionPresentation, renderWorkspacePane, renderWorkspaceParkConfirmation, renderWorkspaceDeleteConfirmation, renderWorkspacePresentation, workspacePaneCollectionsRegions, workContentId, type WorkspacePresentation as FixedWorkspacePresentation, type WorkPaneContribution, type WorkspacePanePresentation, type WorkspacePaneWorkspaceTemplate } from "./workspace-presentation.ts";
 import type { WorkspaceDeletionState, WorkspaceEntry, WorkspaceRegistry } from "./workspace-registry.ts";
 import { workspaceWarnings, type WorkspaceWarning } from "./workspace-warnings.ts";
 
@@ -1268,6 +1268,16 @@ export function createWebApp(deps: WebAppDeps): WebApp {
     if ((params = matchRoute(url, /^\/workspaces\/([^/]+)\/work-views\/reorder$/)) && request.method === "POST") {
       const workspaceId = routeParam(params, 0);
       return await serializePresentationMutation(workspaceId, async () => await reorderWorkViewEndpoint(workspaceId, request));
+    }
+    if ((params = matchRoute(url, /^\/workspaces\/([^/]+)\/(park|delete)\/confirm$/)) && request.method === "GET") {
+      const [id, action] = params;
+      const entry = requireWorkspace(id);
+      const html = action === "park"
+        ? renderWorkspaceParkConfirmation(id, workspaceTitle(entry), (await workspacePresentationBundle(id)).storedWorkViews)
+        : renderWorkspaceDeleteConfirmation(id, workspaceTitle(entry));
+      return wantsStream(request)
+        ? turboStreamResponse(update(workspaceModuleModalFrameId, html))
+        : await surfacePage({ kind: "module-modal", dialogHtml: html });
     }
     if ((params = matchRoute(url, /^\/workspaces\/([^/]+)\/park$/)) && request.method === "POST") return parkWorkspaceEndpoint(params[0], true, request);
     if ((params = matchRoute(url, /^\/workspaces\/([^/]+)\/unpark$/)) && request.method === "POST") return parkWorkspaceEndpoint(params[0], false, request);

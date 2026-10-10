@@ -27,46 +27,111 @@ function focusMenu(menu: HTMLElement): void {
 
 /** Synchronizes menu selection and disclosure state around the native Popover API. */
 export class PopupController extends Controller<HTMLElement> {
-  private trigger!: HTMLButtonElement;
+  private trigger!: HTMLElement;
+  private contextTarget = false;
+  private opener?: HTMLElement;
+  private readonly inertElements = new Map<HTMLElement, boolean>();
+  private openTimer?: number;
+  private pendingPoint?: { x: number; y: number };
   private menu!: HTMLElement;
   private position!: PopupPosition;
 
   connect(): void {
-    this.trigger = this.element.querySelector<HTMLButtonElement>("[data-popup-menu-trigger]")!;
+    this.contextTarget = this.element.hasAttribute("data-popup-menu-context-target");
+    this.trigger = this.contextTarget ? this.element : this.element.querySelector<HTMLButtonElement>("[data-popup-menu-trigger]")!;
     this.menu = this.element.querySelector<HTMLElement>(".popup-menu[popover]")!;
     this.position = new PopupPosition(this.trigger, this.menu);
+    this.menu.addEventListener("beforetoggle", this.contextDisclosure);
     this.menu.addEventListener("click", this.choose);
     this.menu.addEventListener("toggle", this.syncOpenState);
     this.menu.addEventListener("keydown", this.keydown);
     this.trigger.addEventListener("keydown", this.openFromKeyboard);
+    if (this.contextTarget) this.trigger.addEventListener("contextmenu", this.openContext);
   }
 
   disconnect(): void {
+    window.clearTimeout(this.openTimer);
+    window.removeEventListener("pointerup", this.releaseContext);
+    this.restoreBackground();
+    this.menu.removeEventListener("beforetoggle", this.contextDisclosure);
     this.position.disconnect();
     this.menu.removeEventListener("click", this.choose);
     this.menu.removeEventListener("toggle", this.syncOpenState);
     this.menu.removeEventListener("keydown", this.keydown);
     this.trigger.removeEventListener("keydown", this.openFromKeyboard);
+    this.trigger.removeEventListener("contextmenu", this.openContext);
   }
 
   private readonly syncOpenState = (event: ToggleEvent): void => {
-    this.trigger.setAttribute("aria-expanded", String(event.newState === "open"));
+    if (!this.contextTarget) this.trigger.setAttribute("aria-expanded", String(event.newState === "open"));
+    if (this.contextTarget && event.newState === "closed" && !document.querySelector("dialog[open]")) this.opener?.focus();
     if (event.newState === "open") focusMenu(this.menu);
   };
 
   private readonly choose = (event: MouseEvent): void => {
     const item = event.target instanceof Element ? event.target.closest<HTMLElement>(enabledItem) : null;
-    if (!item) return;
+    if (!item) {
+      if (this.contextTarget && event.target === this.menu) this.menu.hidePopover();
+      return;
+    }
     if (item.getAttribute("role") === "menuitemradio") {
       for (const candidate of this.menu.querySelectorAll<HTMLElement>("[role='menuitemradio']")) candidate.setAttribute("aria-checked", String(candidate === item));
     }
     this.menu.hidePopover();
-    this.trigger.focus();
+    (this.opener ?? this.trigger).focus();
   };
 
   private readonly keydown = (event: KeyboardEvent): void => navigateMenu(this.menu, event);
 
+  private readonly contextDisclosure = (event: ToggleEvent): void => {
+    if (!this.contextTarget) return;
+    if (event.newState === "closed") { this.restoreBackground(); return; }
+    // Keep only the menu's ancestor path interactive, including in the top layer.
+    for (let branch: HTMLElement = this.menu; branch.parentElement; branch = branch.parentElement) {
+      for (const sibling of branch.parentElement.children) {
+        if (sibling === branch || !(sibling instanceof HTMLElement)) continue;
+        this.inertElements.set(sibling, sibling.inert);
+        sibling.inert = true;
+      }
+    }
+  };
+
+  private restoreBackground(): void {
+    for (const [element, inert] of this.inertElements) element.inert = inert;
+    this.inertElements.clear();
+  }
+
+  private readonly openContext = (event: MouseEvent): void => {
+    if (event.target instanceof Node && this.menu.contains(event.target)) return;
+    event.preventDefault();
+    this.opener = event.target instanceof Element
+      ? event.target.closest<HTMLElement>("button, a[href], [tabindex]") ?? this.element.querySelector<HTMLElement>("button, a[href], [tabindex]")!
+      : this.element.querySelector<HTMLElement>("button, a[href], [tabindex]")!;
+    this.opener.focus();
+    this.pendingPoint = { x: event.clientX, y: event.clientY };
+    // Some browsers emit contextmenu on press. Opening mid-gesture lets native
+    // popover light-dismiss interpret its release as an outside click.
+    if (event.buttons !== 0) window.addEventListener("pointerup", this.releaseContext, { once: true });
+    else this.releaseContext();
+  };
+
+  private readonly releaseContext = (): void => {
+    window.clearTimeout(this.openTimer);
+    this.openTimer = window.setTimeout(() => {
+      this.position.setPoint(this.pendingPoint);
+      this.menu.showPopover();
+    }, 0);
+  };
+
   private readonly openFromKeyboard = (event: KeyboardEvent): void => {
+    if (this.contextTarget) {
+      if (!(event.target instanceof HTMLElement) || this.menu.contains(event.target) || !(event.key === "ContextMenu" || (event.shiftKey && event.key === "F10"))) return;
+      event.preventDefault();
+      this.opener = event.target;
+      this.position.setPoint();
+      this.menu.showPopover();
+      return;
+    }
     if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
     event.preventDefault();
     this.menu.showPopover();

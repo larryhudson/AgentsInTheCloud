@@ -27,3 +27,6 @@
     .popup-menu[popover]:popover-open { opacity: 0; transform: scale(.97); }
   }
 }
+
+/* Context menus consume click-away gestures instead of activating the page. */
+.popup-menu[data-popup-menu-context]::backdrop { pointer-events: auto; }

@@ -7,6 +7,13 @@ const clamp = (value: number, min: number, max: number): number => Math.max(min,
 
 /** Shared top-layer positioning lifecycle for menus, selects, autocomplete, and confirmations. */
 export class PopupPosition {
+  private point?: { x: number; y: number };
+
+  setPoint(point?: { x: number; y: number }): void {
+    this.point = point;
+    if (this.menu.matches(":popover-open")) this.position();
+  }
+
   private readonly viewport = window.visualViewport!;
   private readonly resize = new ResizeObserver(() => this.position());
   private readonly visibility = new IntersectionObserver((entries) => {
@@ -70,8 +77,12 @@ export class PopupPosition {
     const viewport: Bounds = { left: offsetLeft + gap, right: offsetLeft + width - gap, top: offsetTop + gap, bottom: offsetTop + height - gap };
     this.menu.style.maxWidth = `${Math.min(this.menu.dataset.popupMenuWidth === "content" ? Infinity : 340, width - gap * 2)}px`;
     this.menu.style.minWidth = `${this.placement === "adjacent" ? 0 : Math.min(anchor.width, width - gap * 2)}px`;
+    if (this.point) this.menu.style.maxHeight = `${viewport.bottom - viewport.top}px`;
     const rtl = getComputedStyle(this.trigger).direction === "rtl";
-    const position = (this.placement === "adjacent" ? this.adjacent(anchor, viewport, rtl) : undefined)
+    const position = this.point ? {
+      left: clamp(this.point.x, viewport.left, viewport.right - this.menu.offsetWidth),
+      top: clamp(this.point.y, viewport.top, viewport.bottom - this.menu.offsetHeight),
+    } : (this.placement === "adjacent" ? this.adjacent(anchor, viewport, rtl) : undefined)
       ?? this.vertical(anchor, viewport, rtl);
     this.menu.style.left = `${position.left}px`;
     this.menu.style.top = `${position.top}px`;

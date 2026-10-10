@@ -1,4 +1,5 @@
 import { buttonHtml, type ButtonOptions } from "../button/button-html.ts";
+import { attributesHtml } from "../html.ts";
 import { escapeHtml } from "@agents-in-the-cloud/shared";
 import { popupMenuHtml } from "./popup-surface.ts";
 
@@ -20,4 +21,15 @@ export function popupHtml(options: PopupOptions): string {
     ...options.trigger,
     attributesHtml: `data-popup-menu-trigger aria-haspopup="menu" aria-expanded="false" aria-controls="${escapeHtml(options.id)}" popovertarget="${escapeHtml(options.id)}" ${options.trigger.attributesHtml ?? ""}`,
   })}${popupMenuHtml({ id: options.id, label: options.label, contentHtml: options.contentHtml, placement: options.placement ?? "below", attributesHtml: `${options.width === "content" ? 'data-popup-menu-width="content" ' : ""}${options.menuAttributesHtml ?? ""}` })}</span>`;
+}
+
+/** Right-click/Shift+F10 menu around caller-owned, server-rendered content. */
+export function contextMenuHtml(options: {
+  id: string;
+  label: string;
+  targetHtml: string;
+  contentHtml: string;
+  attributesHtml?: string;
+}): string {
+  return `<div data-controller="popup-menu" data-popup-menu-context-target${attributesHtml(options.attributesHtml)}>${options.targetHtml}${popupMenuHtml({ id: options.id, label: options.label, contentHtml: options.contentHtml, attributesHtml: "data-popup-menu-context" })}</div>`;
 }
