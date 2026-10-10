@@ -42,12 +42,12 @@
   y: 1px;
   width: calc(100% - 2px);
   height: calc(100% - 2px);
-  /* Resolve both radii from height so circles and wide pills match the button. */
-  ry: calc(50% - 1px);
-  rx: auto;
+  /* Follow the control's corners, including the shared square styling. */
+  ry: var(--radius-round);
+  rx: var(--radius-round);
   fill: none;
   stroke-width: 1.5;
-  stroke-linecap: round;
+  stroke-linecap: butt;
   vector-effect: non-scaling-stroke;
 }
 @keyframes perimeter-button-orbit { to { stroke-dashoffset: -100; } }

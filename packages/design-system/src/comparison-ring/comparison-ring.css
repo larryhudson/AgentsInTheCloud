@@ -1,4 +1,4 @@
-/* Reference and value share one clockwise ring over a quiet full-circle track. */
+/* Reference and value share one clockwise square perimeter over a quiet full-outline track. */
 .comparison-ring__track, .comparison-ring__reference, .comparison-ring__value, .comparison-ring__shared { fill: none; stroke-width: 2; stroke-linecap: butt; vector-effect: non-scaling-stroke; }
 .comparison-ring__track { stroke: var(--text-muted); stroke-width: 1; opacity: .25; }
 .comparison-ring__reference { stroke: var(--success); }

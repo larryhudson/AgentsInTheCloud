@@ -432,7 +432,7 @@ export const entries: CatalogueEntry[] = [
     id: "comparison-ring",
     title: "Comparison ring",
     when: "Glanceable, non-interactive progress against a schedule, such as several usage limits in one row. For a link, use Action link's perimeterComparison.",
-    contract: "referencePercent and valuePercent (0–100) share one ring clockwise from twelve, drawn exactly like Action link's comparison. caption is at most three characters inside the ring. label is the accessible name and tooltip; include both values and their meaning.",
+    contract: "referencePercent and valuePercent (0–100) share one square perimeter clockwise from the top center, drawn exactly like Action link's comparison. caption is at most three characters inside the square. label is the accessible name and tooltip; include both values and their meaning.",
     imports: { "comparison-ring": "comparisonRingHtml" },
     sources: ["comparison-ring/comparison-ring-html.ts", "comparison-ring/comparison-ring.css"],
     examples: [{
@@ -450,7 +450,7 @@ export const entries: CatalogueEntry[] = [
     title: "Action link",
     when: "Navigation that deserves button emphasis. Use normal links for prose.",
     contract:
-      "A native anchor: href is navigation, never a click handler masquerading as navigation. No disabled links. Same content and variants as Button. Icon-only links may use perimeterComparison: referencePercent and valuePercent (0–100) share one ring clockwise from twelve. Their overlap is neutral; reference beyond value is green, value beyond reference is red. A dim full-circle track preserves the button outline, including at zero. Include both values and their meaning in the accessible label; focus has a separate outline.",
+      "A native anchor: href is navigation, never a click handler masquerading as navigation. No disabled links. Same content and variants as Button. Icon-only links may use perimeterComparison: referencePercent and valuePercent (0–100) share one square perimeter clockwise from the top center. Their overlap is neutral; reference beyond value is green, value beyond reference is red. A dim full-outline track preserves the button outline, including at zero. Include both values and their meaning in the accessible label; focus has a separate outline.",
     imports: { "action-link": "actionLinkHtml" },
     examples: [
       {

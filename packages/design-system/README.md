@@ -94,7 +94,7 @@ Stimulus positioning lifecycle uses the visual viewport, repositions on scrollin
 and resizing, and bounds long menus with internal scrolling. It deliberately does
 not depend on CSS anchor positioning (fixed triggers misposition in WebKit).
 
-Comparison-ring Action links retain a dim full-circle track beneath the colored
+Comparison-ring Action links retain a dim full-outline track beneath the colored
 arcs, including when both values are zero.
 
 Touch controls keep their target sizes in landscape as well as portrait.

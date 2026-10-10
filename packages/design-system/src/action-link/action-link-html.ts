@@ -7,8 +7,8 @@ export interface ActionLinkOptions {
   href: string;
   variant: ButtonVariant;
   content: ButtonContent;
-  /** Icon-only: two 0–100 values on one clockwise ring. Shared arc is neutral;
-   * reference beyond value is green; value beyond reference is red. A dim full-circle
+  /** Icon-only: two 0–100 values on one clockwise square perimeter. Shared segment is neutral;
+   * reference beyond value is green; value beyond reference is red. A dim full-outline
    * track preserves the button outline, including at zero. Does not imply busy. */
   perimeterComparison?: Comparison;
   /**

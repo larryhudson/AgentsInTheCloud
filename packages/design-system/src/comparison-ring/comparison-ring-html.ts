@@ -1,6 +1,6 @@
 import { escapeHtml } from "@agents-in-the-cloud/shared";
 
-/** Two 0–100 values on one clockwise ring. */
+/** Two 0–100 values on one clockwise perimeter. */
 export interface Comparison { referencePercent: number; valuePercent: number }
 
 export interface ComparisonRingOptions extends Comparison {
@@ -10,18 +10,16 @@ export interface ComparisonRingOptions extends Comparison {
   label: string;
 }
 
-/** Both arcs begin at twelve o'clock. SVG sweep flag 1 always runs clockwise. */
-function clockwiseArc(percent: number): string {
-  if (percent === 0) return "";
-  if (percent === 100) return "M14 1 A13 13 0 0 1 14 27 A13 13 0 0 1 14 1";
-  const angle = (percent / 100 * 360 - 90) * Math.PI / 180;
-  return `M14 1 A13 13 0 ${percent > 50 ? 1 : 0} 1 ${(14 + 13 * Math.cos(angle)).toFixed(4)} ${(14 + 13 * Math.sin(angle)).toFixed(4)}`;
+/** Start at the top center and trace clockwise along the square's edges.
+ * Normalized path length makes percentages measure the whole perimeter. */
+function clockwisePerimeter(percent: number, className: string): string {
+  return `<path class="${className}" d="M14 1 H27 V27 H1 V1 H14" pathLength="100" stroke-dasharray="${percent} 100"/>`;
 }
 
-/** The shared ring drawing. Overlap is neutral; reference beyond value is green; value beyond reference is red. */
+/** The shared perimeter drawing. Overlap is neutral; reference beyond value is green; value beyond reference is red. */
 export function comparisonRingSvgHtml(comparison: Comparison, className: string): string {
   if ([comparison.referencePercent, comparison.valuePercent].some((value) => !Number.isFinite(value) || value < 0 || value > 100)) throw new RangeError("Comparison percentages must be between 0 and 100");
-  return `<svg class="${escapeHtml(className)}" viewBox="0 0 28 28" aria-hidden="true"><path class="comparison-ring__track" d="${clockwiseArc(100)}"/><path class="comparison-ring__reference" d="${clockwiseArc(comparison.referencePercent)}"/><path class="comparison-ring__value" d="${clockwiseArc(comparison.valuePercent)}"/><path class="comparison-ring__shared" d="${clockwiseArc(Math.min(comparison.referencePercent, comparison.valuePercent))}"/></svg>`;
+  return `<svg class="${escapeHtml(className)}" viewBox="0 0 28 28" preserveAspectRatio="none" aria-hidden="true">${clockwisePerimeter(100, "comparison-ring__track")}${clockwisePerimeter(comparison.referencePercent, "comparison-ring__reference")}${clockwisePerimeter(comparison.valuePercent, "comparison-ring__value")}${clockwisePerimeter(Math.min(comparison.referencePercent, comparison.valuePercent), "comparison-ring__shared")}</svg>`;
 }
 
 /** A compact, non-interactive gauge with a short caption inside. */

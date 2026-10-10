@@ -24,7 +24,6 @@
 .composer {
   --composer-control-inset: 10px;
   --composer-control-size: 38.24px;
-  --composer-button-gap: 6px;
   position: relative; z-index: 2;
   pointer-events: none;
 }
@@ -42,9 +41,13 @@
 .composer-input::placeholder { color: var(--text-muted); font: inherit; }
 .composer-buttons {
   grid-area: 1 / 2 / 3 / 3; align-self: end;
-  display: flex; flex-direction: column; gap: var(--composer-button-gap); padding: var(--composer-control-inset);
+  display: flex; flex-direction: column; gap: 0; isolation: isolate; padding: var(--composer-control-inset);
 }
 .composer-button { position: relative; display: flex; align-items: center; justify-content: center; width: var(--composer-control-size); height: var(--composer-control-size); }
+/* Overlap neighboring borders without shrinking the controls themselves.
+   Typing mode shows only Send, so it needs no shared edge. */
+html:not(.software-keyboard-visible) .composer-button + .composer-button { margin-block-start: -1px; }
+.composer-button:is(:hover, :focus-within) { z-index: 1; }
 /* A captioned action (such as Connect to send) is wider than the column and extends to the left. */
 .composer-send { justify-content: flex-end; }
 .composer-prompt-template-buttons { grid-area: 2 / 1; padding: 0 0 var(--composer-control-inset) var(--composer-control-inset); }
@@ -65,7 +68,7 @@ html:not(.software-keyboard-visible) .composer:not(.composer-has-text) .composer
 @media (max-width: 700px) {
   .composer-input { font-size: 16px; }
   /* Tight enough for the column to fit under the 40% max on a phone (4 × 62.5px + 10px). */
-  .composer-buttons { --composer-control-inset: 4px; gap: 2px; padding-block: 2px; }
+  .composer-buttons { --composer-control-inset: 4px; padding-block: 2px; }
 }
 
 /* The floating stack sits at the bottom right of the transcript or terminal.

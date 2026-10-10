@@ -70,11 +70,11 @@
   --weight-bold: 700;
 
   /* Shape roles */
-  --radius-indicator: 4px;
-  --radius-control: 6px;
-  --radius-surface: 10px;
-  --radius-overlay: 14px;
-  --radius-round: 999px;
+  --radius-indicator: 0px;
+  --radius-control: 0px;
+  --radius-surface: 0px;
+  --radius-overlay: 0px;
+  --radius-round: 0px;
 
   /* Daylight is the unthemed default. */
   color-scheme: light;
