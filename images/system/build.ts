@@ -2,6 +2,7 @@ import { mkdir } from "node:fs/promises";
 import { inlineDesignSystemCss } from "../../packages/design-system/src/inline-styles.ts";
 const out = new URL("./.build/", import.meta.url).pathname;
 await mkdir(out, { recursive: true });
+await Bun.write(`${out}/containerd.toml`, Bun.file(new URL("../patched-docker/containerd.toml", import.meta.url)));
 for (const entry of ["supervisor", "test-app"]) {
   const result = await Bun.build({
     entrypoints: [new URL(`./src/${entry}.ts`, import.meta.url).pathname],

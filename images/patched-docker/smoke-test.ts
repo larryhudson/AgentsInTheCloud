@@ -147,9 +147,25 @@ tail -n +2 /tmp/cache-files | xargs stat -c '%n %i %Y' > /tmp/cache-before`);
   await assertNoBaseBlobs();
   assert.equal(await cacheHashes(), hashes);
   assert.match(await exec(consumer, "docker", "run", "--rm", "--network=none", "smoke:result"), /shared EROFS build works/);
+  // Starting a container alone misses the remount Docker performs for exec/copy.
+  // Explicit index=off must work independently of the host's OverlayFS defaults.
+  const checkRunningRootfs = async () => {
+    await exec(consumer, "docker", "run", "--detach", "--network=none", "--name", "live-check", "smoke:result", "sleep", "300");
+    try {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        assert.match(await exec(consumer, "docker", "exec", "live-check", "/hello"), /shared EROFS build works/);
+      }
+      await exec(consumer, "docker", "cp", "live-check:/src/hello.go", "/tmp/live-hello.go");
+      assert.equal(await exec(consumer, "cat", "/tmp/live-hello.go"), await Bun.file(join(context, "hello.go")).text());
+    } finally {
+      await exec(consumer, "docker", "rm", "--force", "live-check");
+    }
+  };
+  await checkRunningRootfs();
   await command(["docker", "restart", "--time", "30", consumer]);
   await ready(consumer);
   assert.match(await exec(consumer, "docker", "run", "--rm", "--network=none", "smoke:result"), /shared EROFS build works/);
+  await checkRunningRootfs();
   await assertNoBaseBlobs();
   assert.equal(await cacheHashes(), hashes);
   // Failure of either managed daemon must terminate the container, not leave it healthy.

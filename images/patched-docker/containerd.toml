@@ -11,6 +11,8 @@ disabled_plugins = ["io.containerd.cri.v1.images", "io.containerd.cri.v1.runtime
   max_concurrent_unpacks = 4
 
 [plugins."io.containerd.snapshotter.v1.erofs"]
+  # Docker remounts running container rootfs for exec/copy, as with overlayfs.
+  ovl_mount_options = ["index=off"]
   layer_content_caches = ["/data/erofs-cache"]
 
 [plugins."io.containerd.service.v1.diff-service"]

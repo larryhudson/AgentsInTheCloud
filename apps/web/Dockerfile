@@ -26,6 +26,7 @@ FROM deps AS build
 RUN bun run --cwd apps/web build:client
 
 FROM ${ATELIER_RUNTIME_IMAGE} AS runtime
+COPY images/patched-docker/containerd.toml /etc/containerd/config.toml
 ARG DEBIAN_FRONTEND=noninteractive
 WORKDIR /app
 
