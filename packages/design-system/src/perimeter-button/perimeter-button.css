@@ -20,9 +20,10 @@
   visibility: hidden;
   pointer-events: none;
 }
+/* The button owns interaction. Its label must not restore visibility or hit
+   testing inside a hidden pane. */
 :is(.activity-button__content, .progress-button__content)[aria-hidden="false"] {
-  visibility: visible;
-  pointer-events: auto;
+  visibility: inherit;
 }
 :is(.activity-button, .progress-button).icon-only :is(.activity-button__content, .progress-button__content) { padding-inline: 0; }
 :is(.button.activity-button > .activity-button__perimeter, .button.progress-button > .progress-button__perimeter) {
