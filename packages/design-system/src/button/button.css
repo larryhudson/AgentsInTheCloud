@@ -29,6 +29,15 @@
   --button-background: color-mix(in srgb, var(--accent) 7%, var(--panel));
   --button-hover-background: color-mix(in srgb, var(--accent) 11%, var(--panel));
 }
+/* Apple Light uses a filled blue primary action. */
+[data-theme="apple-light"] .button.primary {
+  --button-border: var(--accent);
+  --button-background: var(--accent);
+  --button-foreground: var(--accent-contrast);
+  --button-hover-border: #0077ed;
+  --button-hover-background: #0077ed;
+  --button-hover-foreground: var(--accent-contrast);
+}
 .button.danger {
   --button-border: color-mix(in srgb, var(--danger) 24%, var(--line));
   --button-background: color-mix(in srgb, var(--danger) 6%, var(--panel));

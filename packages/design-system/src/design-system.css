@@ -43,7 +43,7 @@
  *
  * This file is the shared visual interface for the shell and every workspace
  * module. Tokens describe visual roles rather than accumulated measurements.
- * Theme blocks assign only fundamental colors; derived states are shared.
+ * Theme blocks assign colors and visual roles; derived states are shared.
  */
 
 :root {
@@ -129,6 +129,47 @@
   font-weight: var(--weight-bold);
   line-height: var(--leading-tight);
   letter-spacing: -.03em;
+}
+
+/* Apple-inspired light surfaces, system typography and softly rounded controls.
+ * Source colors inherit the shared light palette. */
+[data-theme="apple-light"] {
+  color-scheme: light;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", system-ui, sans-serif;
+  --radius-indicator: 999px;
+  --radius-control: 8px;
+  --radius-surface: 12px;
+  --radius-overlay: 16px;
+  --radius-round: 8px;
+  --bg: #f5f5f7;
+  --panel: #ffffff;
+  --elev: #f5f5f7;
+  --line: #e5e5ea;
+  --line-strong: #d2d2d7;
+  --text: #424245;
+  --text-bright: #1d1d1f;
+  --text-muted: #6e6e73;
+  --accent: #0071e3;
+  --accent-contrast: #ffffff;
+  --success: #248a3d;
+  --warning: #946200;
+  --danger: #d70015;
+  --decorative: #8944ab;
+  --shadow: 0 12px 36px rgb(0 0 0 / 12%);
+  --floating-surface-shadow: 0 4px 18px rgb(0 0 0 / 8%);
+  --panel-inner-glow: none;
+  --panel-rim-reflection: none;
+  --panel-outline: linear-gradient(var(--line), var(--line));
+  --panel-background-image: none;
+  --terminal-background-image: none;
+  --content-row-rim-reflection: none;
+  --content-row-outline: linear-gradient(var(--line), var(--line));
+  --content-row-inner-glow: none;
+  --button-lighting-content: none;
+  --button-engaged-lighting-content: none;
+  --button-background-image: none;
+  --button-border: var(--line-strong);
+  --button-hover-border: var(--accent);
 }
 
 [data-theme="cappuccino"] {

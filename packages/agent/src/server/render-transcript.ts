@@ -70,7 +70,7 @@ export function renderTranscriptItem(ctx: AgentRenderContext, item: TranscriptIt
   } else if (item.type === "user") body = renderUserMessage(ctx, item);
   else if (item.type === "thinking") body = renderThinkingItem(ctx, item);
   else if (item.type === "text") {
-    const className = item.final ? "markdown agent-final" : "markdown agent-itext-md";
+    const className = item.final ? "markdown agent-message agent-final" : "markdown agent-message agent-itext-md";
     body = item.live
       ? transcriptRow(renderStreamingTextBody(ctx, item.key, item.text, className))
       : renderMarkdownRow(ctx, item.text, className);

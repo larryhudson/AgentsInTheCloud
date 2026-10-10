@@ -4,6 +4,7 @@ import { Value } from "typebox/value";
 /** App-wide Themes shared across open pages. design-system.css defines each one as a [data-theme] rule. */
 export const agentsInTheCloudThemes = [
   { id: "daylight", label: "Daylight", appearance: "light" },
+  { id: "apple-light", label: "Apple Light", appearance: "light" },
   { id: "cappuccino", label: "Cappuccino", appearance: "dark" },
   { id: "tokyo-night", label: "Tokyo Night", appearance: "dark" },
   { id: "midnight", label: "Midnight", appearance: "dark" },

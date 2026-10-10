@@ -6,6 +6,7 @@ export const themeRegionId = "agents-in-the-cloud_theme";
 
 export const themeBackgroundColors = {
   daylight: "#f3f5f9",
+  "apple-light": "#f5f5f7",
   cappuccino: "#2b2018",
   "tokyo-night": "#1a1b26",
   midnight: "#0d1117",
