@@ -1,10 +1,10 @@
 import { agentsInTheCloudName, escapeHtml, type WorkspaceModule } from "@agents-in-the-cloud/shared";
 import { randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
-import { readThemeSetting } from "@agents-in-the-cloud/shared/theme";
+import { agentsInTheCloudThemes, readThemeSetting } from "@agents-in-the-cloud/shared/theme";
 import { pageBodyStimulusHtml } from "@agents-in-the-cloud/design-system/page-body";
 import { parseAssetManifest, type AssetManifest } from "./asset-manifest.ts";
-import { themeRegionHtml, themeRegionId } from "./settings/theme.ts";
+import { themeBackgroundColors, themeRegionHtml, themeRegionId } from "./settings/theme.ts";
 
 export function createPageLayout(options: { devReload?: boolean; workspaceModules: readonly WorkspaceModule[] }): (body: string) => string {
   let cachedAssetManifest: AssetManifest | undefined;
@@ -47,11 +47,7 @@ export function createPageLayout(options: { devReload?: boolean; workspaceModule
 <head>
 <meta charset="utf-8">
 <style>
-html { background: #f3f5f9; color-scheme: light; }
-html[data-theme="cappuccino"] { background: #2b2018; color-scheme: dark; }
-html[data-theme="tokyo-night"] { background: #1a1b26; color-scheme: dark; }
-html[data-theme="midnight"] { background: #0d1117; color-scheme: dark; }
-html[data-theme="nord"] { background: #2e3440; color-scheme: dark; }
+${agentsInTheCloudThemes.map(({ id, appearance }) => `html[data-theme="${id}"] { background: ${themeBackgroundColors[id]}; color-scheme: ${appearance}; }`).join("\n")}
 ${options.devReload ? `
 /* Keep the previous page painted while a rebuilt development page loads. */
 @view-transition { navigation: auto; }
@@ -65,7 +61,7 @@ ${options.devReload ? `
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.webmanifest">
-<meta name="theme-color" content="#eadcc6">
+<meta name="theme-color" content="${themeBackgroundColors[theme]}">
 <link rel="stylesheet" href="${assetPath("/design-system.css")}">
 <link rel="stylesheet" href="${assetPath("/style.css")}">
 <link rel="stylesheet" href="${assetPath("/provisioning.css")}">

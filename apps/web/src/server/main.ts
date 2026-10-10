@@ -28,6 +28,8 @@ import { createWebApp, type WebApp } from "./app.ts";
 import { parseAssetManifest } from "./asset-manifest.ts";
 import { createCableServer, type CableSocketData } from "./cable.ts";
 import { legacyStaticFiles } from "./static-files.ts";
+import { readThemeSetting } from "@agents-in-the-cloud/shared/theme";
+import { themeBackgroundColors } from "./settings/theme.ts";
 import { workspaceModules } from "./workspace-modules.generated.ts";
 import { prepareWorkspaceForUse, recoverWorkspaces } from "./workspace-recovery.ts";
 import { createFileWorkspaceActivityStore, createFileWorkspaceAttentionStore, createFileWorkspaceDeletionStore, createWorkspaceRegistry } from "./workspace-registry.ts";
@@ -183,6 +185,11 @@ async function serveStatic(pathname: string, request: Request): Promise<Response
   if (!(await file.exists())) return textResponse("not found", { status: 404 });
   const headers = new Headers({ "content-type": entry.contentType });
   if (["/workspace.js", "/service-worker.js", "/manifest.webmanifest", "/design-system-catalogue.html", "/design-system.css"].includes(pathname)) headers.set("cache-control", "no-store");
+  if (pathname === "/manifest.webmanifest") {
+    const manifest = await file.json();
+    const color = themeBackgroundColors[readThemeSetting()];
+    return new Response(JSON.stringify({ ...manifest, theme_color: color, background_color: color }), { headers });
+  }
   return new Response(file, { headers });
 }
 

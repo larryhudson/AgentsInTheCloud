@@ -4,9 +4,17 @@ import { agentsInTheCloudThemes, isAgentsInTheCloudTheme, readThemeSetting, writ
 
 export const themeRegionId = "agents-in-the-cloud_theme";
 
+export const themeBackgroundColors = {
+  daylight: "#f3f5f9",
+  cappuccino: "#2b2018",
+  "tokyo-night": "#1a1b26",
+  midnight: "#0d1117",
+  nord: "#2e3440",
+} satisfies Record<AgentsInTheCloudTheme, string>;
+
 /** Contents of the page's theme region. Its controller applies the theme to the document. */
 export function themeRegionHtml(theme: AgentsInTheCloudTheme = readThemeSetting()): string {
-  return `<span data-controller="agents-in-the-cloud-theme" data-agents-in-the-cloud-theme-name-value="${escapeHtml(theme)}"></span>`;
+  return `<span data-controller="agents-in-the-cloud-theme" data-agents-in-the-cloud-theme-name-value="${escapeHtml(theme)}" data-agents-in-the-cloud-theme-color-value="${themeBackgroundColors[theme]}"></span>`;
 }
 
 export async function renderThemeSettings(): Promise<string> {

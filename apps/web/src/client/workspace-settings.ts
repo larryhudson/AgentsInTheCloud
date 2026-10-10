@@ -10,8 +10,13 @@ import { registerWorkspaceControllers } from "./workspace-controller-registry.ts
 
 /** Applies the server's theme setting, on page load and when the shell region pushes a change. */
 class AgentsInTheCloudThemeController extends Controller<HTMLElement> {
-  static values = { name: String };
+  static values = { name: String, color: String };
   declare readonly nameValue: string;
+  declare readonly colorValue: string;
+
+  colorValueChanged(): void {
+    document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')!.content = this.colorValue;
+  }
 
   nameValueChanged(): void {
     const root = document.documentElement;
