@@ -113,6 +113,35 @@ describe("workspace secrets", () => {
     expect((await load()).env.TOKEN).toBeUndefined();
   });
 
+  test.each([false, true])("substitutes query secrets only for allowed hosts with allowInPath=%s", async (allowInPath) => {
+    const workspaceTemplate = (await addWorkspaceTemplate("https://github.com/org/lastfm.git")).workspaceTemplate;
+    const secretValue = "lastfm-key+with&reserved=characters /";
+    await createWorkspaceTemplateSecret(workspaceTemplate.id, {
+      envName: "LASTFM_API_KEY", hostPattern: "ws.audioscrobbler.com", secretValue, allowInPath,
+    });
+    const context = await createWorkspaceSecretContext("test-workspace", workspaceTemplateInit(workspaceTemplate.id));
+    const placeholder = context.env.LASTFM_API_KEY!;
+    const query = `?method=user.getrecenttracks&api_key=${placeholder}&user=listener&tag=one&tag=two`;
+    const result = await context.hooks.onRequest(new Request(`https://ws.audioscrobbler.com/2.0/${query}`));
+    const url = new URL(result.url);
+
+    expect(url.searchParams.get("api_key")).toBe(secretValue);
+    expect(url.searchParams.get("method")).toBe("user.getrecenttracks");
+    expect(url.searchParams.get("user")).toBe("listener");
+    expect(url.searchParams.getAll("tag")).toEqual(["one", "two"]);
+    expect(context.env.LASTFM_API_KEY).toBe(placeholder);
+    expect(context.hooks.scrubResponseHeader(result.url, result)).toContain("api_key=[REDACTED]&user=listener");
+
+    for (const host of ["other.example.net", "ws.audioscrobbler.com.attacker.example"]) {
+      const nonmatchingUrl = `https://${host}/2.0/${query}`;
+      expect((await context.hooks.onRequest(new Request(nonmatchingUrl))).url).toBe(nonmatchingUrl);
+      const rawSecretUrl = new URL(nonmatchingUrl);
+      rawSecretUrl.searchParams.set("api_key", secretValue);
+      await expect(context.hooks.onRequest(new Request(rawSecretUrl)))
+        .rejects.toThrow(`secret LASTFM_API_KEY not allowed for host: ${host}`);
+    }
+  });
+
   test("path injection defaults to Telegram only and respects live per-secret overrides", async () => {
     setGitHubToken("github-credential");
     const workspaceTemplate = (await addWorkspaceTemplate("https://github.com/org/path-secrets.git")).workspaceTemplate;

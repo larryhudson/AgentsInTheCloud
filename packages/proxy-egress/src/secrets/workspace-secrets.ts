@@ -103,7 +103,7 @@ function buildContext(workspaceId: string, secrets: Record<string, SecretDefinit
     allowedHosts: ["*"],
     blockInternalRanges: false,
     isIpAllowed: ({ ip }) => isWorkspaceEgressAddress(ip),
-    replaceSecretsInQuery: false,
+    replaceSecretsInQuery: true,
     secrets,
     onRequest: async (request, registerSecret) => {
       for (const { transform } of requestTransforms.values()) request = await transform(request, registerSecret);
